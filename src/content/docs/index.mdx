@@ -1,0 +1,30 @@
+---
+title: Aleph Garden
+description: Your data as RDF in a store you own, rendered through views you choose.
+template: splash
+hero:
+  tagline: Your data as RDF in a store you own, rendered through views you choose.
+  actions:
+    - text: Read about view
+      link: /docs/view/
+      icon: right-arrow
+    - text: GitHub
+      link: https://github.com/aleph-garden
+      icon: external
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components'
+
+<CardGrid stagger>
+  <Card title="view" icon="document">
+    A rendering layer for resources on a Solid pod. One IRI in, HTML out, and
+    the piece that decides how is a plain rule table over a list of views.
+    [Read the contract](/docs/view/).
+  </Card>
+  <Card title="vocab" icon="list-format">
+    The vocabularies everything above is described in, under
+    `https://w3id.org/aleph/ns/`.
+    [Browse on GitHub](https://github.com/aleph-garden/vocab).
+  </Card>
+</CardGrid>
