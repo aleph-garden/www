@@ -14,7 +14,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
+      # No frozen lockfile: the platform binding rolldown needs on the runner
+      # is an optional dependency bun resolves at install time.
+      - run: bun install
       - run: bun run check
       - run: bun run build
       - name: Deploy to Cloudflare Pages
