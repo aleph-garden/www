@@ -5,7 +5,8 @@ import { CHECKLIST_PATH, CLAIM_PATH, LANDING_VIEW, landingView, VOCABULARY } fro
 const SOURCES = {
   turtle: '<pre class="shiki"><code>&lt;&gt; a schema:Claim</code></pre>',
   jsonld: '<pre class="shiki"><code>{"@type":"schema:Claim"}</code></pre>',
-  view: '<pre class="shiki"><code>const claimView = {}</code></pre>'
+  view: '<pre class="shiki"><code>const claimView = {}</code></pre>',
+  ambient: '<svg class="ambient" aria-hidden="true"></svg>'
 }
 const landing = landingView('https://pod.example', SOURCES)
 
@@ -250,5 +251,24 @@ describe('the artefact panels', () => {
     outer.querySelector<HTMLButtonElement>('.tab[data-panel="viewer"]')?.click()
     expect(shown(outer)).toEqual(['viewer'])
     dispose?.()
+  })
+})
+
+describe('the field behind the opening', () => {
+  test('puts the field the build prepared at the start of the opening', async () => {
+    const rendered = await landing.render(resource('https://pod.example/'), noop)
+    const opening = rendered.html.indexOf('<div class="opening">')
+    expect(rendered.html.indexOf(SOURCES.ambient)).toBeGreaterThan(opening)
+    expect(rendered.html.indexOf(SOURCES.ambient)).toBeLessThan(rendered.html.indexOf('class="band split hero"'))
+  })
+
+  test('leaves the hero\'s own label rows alone', async () => {
+    const rendered = await landing.render(resource('https://pod.example/'), noop)
+    // `field` names the IRI and Rule rows in the hero. The ambient layer is
+    // absolutely positioned, so sharing the name stacked the two rows on top
+    // of each other at the corner of the page.
+    expect(rendered.html.match(/<div class="field">/g)).toHaveLength(2)
+    expect(rendered.html).toContain('<span class="field-name">IRI</span>')
+    expect(rendered.html).toContain('<span class="field-name">Rule</span>')
   })
 })

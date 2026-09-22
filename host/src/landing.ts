@@ -23,9 +23,10 @@ export const CHECKLIST_PATH = '/fixtures/packing.txt'
 /** The claim the view beside its own source draws. */
 export const CLAIM_PATH = '/fixtures/claim.ttl'
 
-/** The same claim, coloured at build time in each representation the picker
- *  offers, and the view's own source. */
-export type Sources = { turtle: string; jsonld: string; view: string }
+/** What the build prepares for the page: the claim, coloured in each
+ *  representation the picker offers, the view's own source, and the field
+ *  behind the opening, which the ambient view drew from the vocabulary. */
+export type Sources = { turtle: string; jsonld: string; view: string; ambient: string }
 
 /** The Vitrine vocabulary, which the worker serves as `text/turtle` from this
  *  origin. Absolute rather than built from `origin`: the document lives at one
@@ -201,27 +202,30 @@ function page(
   const claimPath = CLAIM_PATH
   return `<div class="landing">
     <div class="page">
-      ${topControls()}
+      <div class="opening">
+        ${sources.ambient}
+        ${topControls()}
 
-      <section class="band split hero">
-        <div class="prose">
-          <h1 class="wordmark"><img class="on-light" src="/brand/lockup-horizontal-full-light.svg" alt="Aleph Garden" /><img class="on-dark" src="/brand/lockup-horizontal-full-dark.svg" alt="Aleph Garden" /></h1>
-          <p class="statement">A resource has an address, a table of rules picks the code that draws it, and you replace that code without building an application around it.</p>
-          <p class="byline">My workshop for that one mechanism. I am <a href="https://github.com/tophcodes" target="_top">Christopher M&uuml;hl</a> and I work on it in the open, in pieces.</p>
-        </div>
-        <figure class="artefact">
-          <div class="field">
-            <span class="field-name">IRI</span>
-            <code>${checklistIri}</code>
+        <section class="band split hero">
+          <div class="prose">
+            <h1 class="wordmark"><img class="on-light" src="/brand/lockup-horizontal-full-light.svg" alt="Aleph Garden" /><img class="on-dark" src="/brand/lockup-horizontal-full-dark.svg" alt="Aleph Garden" /></h1>
+            <p class="statement">A resource has an address, a table of rules picks the code that draws it, and you replace that code without building an application around it.</p>
+            <p class="byline">My workshop for that one mechanism. I am <a href="https://github.com/tophcodes" target="_top">Christopher M&uuml;hl</a> and I work on it in the open, in pieces.</p>
           </div>
-          <div class="field">
-            <span class="field-name">Rule</span>
-            <code class="muted">no condition &rarr; views#fallback</code>
-          </div>
-          <div class="slot">${checklist}</div>
-          <figcaption>Drawn here by the same pipeline that drew the page around it. A rule matched <code>${here}</code> and named the view that returned this markup; the file above arrived at the last row of the same table, and its view returned the three lines in this slot.</figcaption>
-        </figure>
-      </section>
+          <figure class="artefact">
+            <div class="field">
+              <span class="field-name">IRI</span>
+              <code>${checklistIri}</code>
+            </div>
+            <div class="field">
+              <span class="field-name">Rule</span>
+              <code class="muted">no condition &rarr; views#fallback</code>
+            </div>
+            <div class="slot">${checklist}</div>
+            <figcaption>Drawn here by the same pipeline that drew the page around it. A rule matched <code>${here}</code> and named the view that returned this markup; the file above arrived at the last row of the same table, and its view returned the three lines in this slot.</figcaption>
+          </figure>
+        </section>
+      </div>
 
       <section class="band split reversed">
         <figure class="artefact bleed">

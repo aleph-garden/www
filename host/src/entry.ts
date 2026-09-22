@@ -8,6 +8,7 @@ import './landing.css'
 import { boot } from '@aleph-garden/host-core'
 import jsonldSource from '../../public/fixtures/claim.jsonld?highlight'
 import turtleSource from '../../public/fixtures/claim.ttl?highlight'
+import ambientSource from '../../public/ns/vitrine?ambient'
 import viewSource from './claim.ts?highlight'
 import { gardenHost } from './host.ts'
 
@@ -30,4 +31,6 @@ function unusedChrome(): Element {
   return frame
 }
 
-void boot(gardenHost({ turtle: turtleSource, jsonld: jsonldSource, view: viewSource }), unusedChrome(), document.getElementById('root')!)
+const sources = { turtle: turtleSource, jsonld: jsonldSource, view: viewSource, ambient: ambientSource }
+
+void boot(gardenHost(sources), unusedChrome(), document.getElementById('root')!)

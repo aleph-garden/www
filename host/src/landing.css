@@ -366,6 +366,47 @@ details.source .shiki {
   color: var(--shiki-light);
 }
 
+/* The still field behind the opening, named `ambient` because `field` is
+   already the hero's label rows. It sits under the content and takes no space:
+   the opening, controls and hero together, is the positioning context, and the
+   field fills its height and runs to the viewport edges past the page column.
+   `100vw` counts the scrollbar, so the landing clips what overhangs. The band
+   after the opening is not a sibling of another band, so it gets no top border
+   and the field ends without a rule under it. Each line takes the categorical
+   colour of the graph view's type channel; its width and opacity come with the
+   path, and stay low enough that the prose above keeps its own contrast. */
+.opening {
+  position: relative;
+  isolation: isolate;
+}
+.landing {
+  overflow-x: clip;
+}
+.ambient {
+  position: absolute;
+  top: 0;
+  /* The tail runs on into the next band's top padding, which is empty. The
+     height is explicit because an SVG takes it from its viewBox otherwise. */
+  height: calc(100% + var(--ag-space-9));
+  left: calc(50% - 50vw);
+  z-index: -1;
+  width: 100vw;
+  pointer-events: none;
+}
+.ambient path {
+  fill: none;
+  stroke: var(--graph-edge);
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ambient [data-slot='1'] { stroke: var(--cat-1); }
+.ambient [data-slot='2'] { stroke: var(--cat-2); }
+.ambient [data-slot='3'] { stroke: var(--cat-3); }
+.ambient [data-slot='4'] { stroke: var(--cat-4); }
+.ambient [data-slot='5'] { stroke: var(--cat-5); }
+.ambient [data-slot='6'] { stroke: var(--cat-6); }
+
 /* Section 4 of the design language, which host-core's stylesheet does not
    carry: the graph palette and the categorical set, values taken verbatim from
    tokens.md sections 4.2 and 4.9. The ceiling: they live here instead of in the

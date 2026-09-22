@@ -4,7 +4,7 @@ import { gardenHost } from '../src/host.ts'
 
 describe('gardenHost', () => {
   test('parses a JSON-LD resource into a graph', async () => {
-    const renderer = createRenderer({ parsers: gardenHost({ turtle: '', jsonld: '', view: '' }).parsers({}), views: [] })
+    const renderer = createRenderer({ parsers: gardenHost({ turtle: '', jsonld: '', view: '', ambient: '' }).parsers({}), views: [] })
     const parsed = await renderer.parse({
       iri: 'https://pod.example/x.jsonld',
       contentType: 'application/ld+json',

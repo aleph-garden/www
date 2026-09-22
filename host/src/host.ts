@@ -12,8 +12,8 @@ import { claimView } from './claim.ts'
 import { graphView } from './graph.ts'
 import { landingView, type Sources } from './landing.ts'
 
-/** `sources` holds the claim in each representation the page offers, and the
- *  view's own source, all coloured at build time. They arrive from the entry
+/** `sources` holds what the build prepared for the landing page: the claim
+ *  and the view's source, coloured, and the field. They arrive from the entry
  *  rather than being imported here, so nothing in this module needs the build
  *  to run. */
 export const gardenHost = (sources: Sources): Host => ({
