@@ -20,12 +20,14 @@ export default function aleph({ project }) {
             ...(config.customCss ?? []),
             '@aleph-garden/starlight-theme/fonts.css',
             '@aleph-garden/starlight-theme/tokens.css',
-            '@aleph-garden/starlight-theme/starlight.css'
+            '@aleph-garden/starlight-theme/starlight.css',
+            '@aleph-garden/starlight-theme/footer.css'
           ],
           components: {
             ...config.components,
             SiteTitle: '@aleph-garden/starlight-theme/components/SiteTitle.astro',
-            Footer: '@aleph-garden/starlight-theme/components/Footer.astro'
+            Footer: '@aleph-garden/starlight-theme/components/Footer.astro',
+            PageFrame: '@aleph-garden/starlight-theme/components/PageFrame.astro'
           }
         })
         addIntegration({

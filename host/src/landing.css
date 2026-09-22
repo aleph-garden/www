@@ -106,8 +106,7 @@
   padding-top: var(--ag-space-5);
   border-top: var(--ag-stroke-hair) solid var(--ag-border);
 }
-.landing .projects h2,
-.landing .site-footer h2 {
+.landing .projects h2 {
   margin: 0 0 var(--ag-space-4);
   font-family: var(--ag-font-text);
   font-size: var(--ag-type-xs);
@@ -245,31 +244,31 @@
   height: 3.5rem;
   width: auto;
 }
-.landing :is(.wordmark, .footer-mark) .on-dark {
+.landing .wordmark .on-dark {
   display: none;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-ag-theme='light']):not(.theme-light) .landing :is(.wordmark, .footer-mark) .on-light {
+  :root:not([data-ag-theme='light']):not(.theme-light) .landing .wordmark .on-light {
     display: none;
   }
-  :root:not([data-ag-theme='light']):not(.theme-light) .landing :is(.wordmark, .footer-mark) .on-dark {
+  :root:not([data-ag-theme='light']):not(.theme-light) .landing .wordmark .on-dark {
     display: block;
   }
 }
-[data-ag-theme='dark'] .landing :is(.wordmark, .footer-mark) .on-light,
-.theme-dark .landing :is(.wordmark, .footer-mark) .on-light {
+[data-ag-theme='dark'] .landing .wordmark .on-light,
+.theme-dark .landing .wordmark .on-light {
   display: none;
 }
-[data-ag-theme='dark'] .landing :is(.wordmark, .footer-mark) .on-dark,
-.theme-dark .landing :is(.wordmark, .footer-mark) .on-dark {
+[data-ag-theme='dark'] .landing .wordmark .on-dark,
+.theme-dark .landing .wordmark .on-dark {
   display: block;
 }
-[data-ag-theme='light'] .landing :is(.wordmark, .footer-mark) .on-light,
-.theme-light .landing :is(.wordmark, .footer-mark) .on-light {
+[data-ag-theme='light'] .landing .wordmark .on-light,
+.theme-light .landing .wordmark .on-light {
   display: block;
 }
-[data-ag-theme='light'] .landing :is(.wordmark, .footer-mark) .on-dark,
-.theme-light .landing :is(.wordmark, .footer-mark) .on-dark {
+[data-ag-theme='light'] .landing .wordmark .on-dark,
+.theme-light .landing .wordmark .on-dark {
   display: none;
 }
 
@@ -641,85 +640,6 @@
   color: var(--ag-text-muted);
 }
 
-/* --- the footer, in the page's grid --- */
-
-.site-footer {
-  background: var(--ag-sunken);
-  border-top: var(--ag-stroke-hair) solid var(--ag-border);
-  font-size: var(--ag-type-ui);
-  line-height: var(--ag-leading-ui);
-}
-.footer-grid,
-.footer-base {
-  box-sizing: border-box;
-  max-width: var(--ag-page-max);
-  margin: 0 auto;
-  padding-inline: var(--ag-space-8);
-}
-.footer-grid {
-  display: grid;
-  grid-template-columns: 25rem repeat(2, minmax(0, 1fr));
-  gap: var(--ag-space-7) var(--ag-space-9);
-  padding-block: var(--ag-space-8) var(--ag-space-7);
-}
-.footer-about,
-.footer-column {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ag-space-2);
-}
-.footer-about p {
-  margin: 0;
-  color: var(--ag-text-muted);
-}
-.footer-mark img {
-  display: block;
-  height: 1.75rem;
-  width: auto;
-}
-.site-footer .placeholder {
-  font-family: var(--ag-font-mono);
-  color: var(--ag-text-muted);
-}
-.footer-base {
-  display: flex;
-  justify-content: flex-end;
-  padding-block: var(--ag-space-3);
-  border-top: var(--ag-stroke-hair) solid var(--ag-border);
-}
-
-.icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  padding: 0;
-  border: 0;
-  border-radius: var(--ag-radius-1);
-  background: none;
-  color: var(--ag-text-muted);
-  cursor: pointer;
-}
-.icon:hover {
-  color: var(--ag-accent);
-  background: var(--ag-ground);
-}
-.icon:focus-visible {
-  outline: 2px solid var(--ag-focus);
-  outline-offset: 2px;
-}
-
-/* One glyph per appearance, and the button's own state picks it. */
-.theme-toggle svg {
-  display: none;
-}
-.theme-toggle[data-mode='system'] svg[data-mode='system'],
-.theme-toggle[data-mode='light'] svg[data-mode='light'],
-.theme-toggle[data-mode='dark'] svg[data-mode='dark'] {
-  display: block;
-}
-
 /* --- narrow --- */
 
 /* One column below the width tokens.md section 6.5 puts two columns at. The
@@ -732,20 +652,10 @@
   .intro {
     position: static;
   }
-  .footer-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-  .footer-about {
-    grid-column: 1 / -1;
-  }
 }
 
 @media (max-width: 48rem) {
   .layout {
     padding: var(--ag-space-7) var(--ag-space-5);
-  }
-  .footer-grid,
-  .footer-base {
-    padding-inline: var(--ag-space-5);
   }
 }

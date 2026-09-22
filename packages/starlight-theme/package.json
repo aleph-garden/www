@@ -19,12 +19,29 @@
       "types": "./footer.d.ts",
       "default": "./footer.js"
     },
+    "./theme": {
+      "types": "./theme.d.ts",
+      "default": "./theme.js"
+    },
     "./fonts.css": "./fonts.css",
     "./tokens.css": "./tokens.css",
     "./starlight.css": "./starlight.css",
+    "./footer.css": "./footer.css",
     "./components/*": "./components/*"
   },
-  "files": ["index.js", "index.d.ts", "footer.js", "footer.d.ts", "virtual.d.ts", "*.css", "components", "fonts", "brand"],
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "footer.js",
+    "footer.d.ts",
+    "theme.js",
+    "theme.d.ts",
+    "virtual.d.ts",
+    "*.css",
+    "components",
+    "fonts",
+    "brand"
+  ],
   "publishConfig": {
     "access": "public",
     "tag": "dev"

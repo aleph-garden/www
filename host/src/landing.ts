@@ -8,7 +8,8 @@
 
 import { escapeHtml, type View } from '@aleph-garden/vitrine'
 import projects from '../../public/projects.json'
-import { installTheme, THEME_LABEL } from './theme.ts'
+import { footer } from '@aleph-garden/starlight-theme/footer'
+import { installTheme } from '@aleph-garden/starlight-theme/theme'
 
 export const LANDING_VIEW = 'https://aleph.garden/views/landing'
 
@@ -106,39 +107,18 @@ function labEntry(repo: Repository): string {
 const lockup = (variant: 'full' | 'short', alt: string) =>
   `<img class="on-light" src="/brand/lockup-horizontal-${variant}-light.svg" alt="${alt}" /><img class="on-dark" src="/brand/lockup-horizontal-${variant}-dark.svg" alt="${alt}" />`
 
-/** All three appearance glyphs are here and the stylesheet shows the one the
- *  button's state names. */
-function themeToggle(): string {
-  return `<button class="icon theme-toggle" type="button" data-mode="system" aria-label="${escapeHtml(THEME_LABEL.system)}">
-        <svg data-mode="system" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.75a6.25 6.25 0 0 0 0 12.5z" fill="currentColor"/></svg>
-        <svg data-mode="light" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="3.25" fill="currentColor"/><path d="M8 .75v2M8 13.25v2M.75 8h2M13.25 8h2M2.9 2.9l1.4 1.4M11.7 11.7l1.4 1.4M13.1 2.9l-1.4 1.4M4.3 11.7l-1.4 1.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        <svg data-mode="dark" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M13.2 10.4A5.6 5.6 0 0 1 5.6 2.8a5.75 5.75 0 1 0 7.6 7.6z" fill="currentColor"/></svg>
-      </button>`
-}
-
-function footer(): string {
-  return `<footer class="site-footer">
-      <div class="footer-grid">
-        <div class="footer-about">
-          <a class="footer-mark" href="/" target="_top">${lockup('short', 'Aleph Garden')}</a>
-          <p>A lab by ${link('https://github.com/tophcodes', 'Christopher Mühl')}, worked on in the open.</p>
-        </div>
-        <div class="footer-column">
-          <h2>Source</h2>
-          ${link('https://github.com/aleph-garden', 'github.com/aleph-garden')}
-          ${link('https://github.com/aleph-garden/www/blob/main/host/src/landing.ts', 'The view drawing this page')}
-        </div>
-        <div class="footer-column">
-          <h2>Contact</h2>
-          ${link('https://github.com/tophcodes', 'GitHub')}
-          <span class="placeholder">[Impressum]</span>
-        </div>
-      </div>
-      <div class="footer-base">
-        ${themeToggle()}
-      </div>
-    </footer>`
-}
+/** The site footer every page on aleph.garden draws, with the link to the
+ *  view that drew this one. */
+const siteFooter = footer({
+  lockup: {
+    light: '/brand/lockup-horizontal-short-light.svg',
+    dark: '/brand/lockup-horizontal-short-dark.svg'
+  },
+  source: {
+    href: 'https://github.com/aleph-garden/www/blob/main/host/src/landing.ts',
+    text: 'The view drawing this page'
+  }
+})
 
 function page(origin: string, sources: Sources, vocabulary: string): string {
   const here = escapeHtml(`${origin}/`)
@@ -213,7 +193,7 @@ function page(origin: string, sources: Sources, vocabulary: string): string {
         </div>
       </div>
     </div>
-    ${footer()}
+    ${siteFooter}
   </div>`
 }
 

@@ -4,6 +4,7 @@
 // page at the same address.
 import '@aleph-garden/host-core/style.css'
 import '../../src/styles/fonts.css'
+import '@aleph-garden/starlight-theme/footer.css'
 import './landing.css'
 import { boot } from '@aleph-garden/host-core'
 import ambientSource from '../../public/ns/vitrine?ambient'

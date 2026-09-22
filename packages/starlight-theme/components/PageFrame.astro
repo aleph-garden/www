@@ -1,0 +1,28 @@
+---
+// Starlight's own frame, then the site footer across the full viewport width
+// below it, the same markup and stylesheet the landing page draws. The edit
+// link sits in the footer's Source column when the page has a source file.
+import Default from '@astrojs/starlight/components/PageFrame.astro'
+import { footer } from '../footer.js'
+import light from '../brand/lockup-horizontal-short-light.svg'
+import dark from '../brand/lockup-horizontal-short-dark.svg'
+
+const { editUrl } = Astro.locals.starlightRoute
+const html = footer({
+  lockup: { light: light.src, dark: dark.src },
+  source: editUrl ? { href: editUrl.href, text: 'Edit this page' } : undefined
+})
+---
+
+<Default>
+  <slot name="header" slot="header" />
+  <slot name="sidebar" slot="sidebar" />
+  <slot />
+</Default>
+<Fragment set:html={html} />
+
+<script>
+  import { installTheme } from '../theme.js'
+
+  installTheme(document)
+</script>

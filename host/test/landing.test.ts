@@ -81,14 +81,14 @@ describe('landingView', () => {
   test('keeps projects out of the footer', async () => {
     const rendered = await landing.render(resource('https://pod.example/'), noop)
     const footer = rendered.html.slice(rendered.html.indexOf('<footer'))
-    expect(footer).toContain('<h2>Source</h2>')
-    expect(footer).toContain('<h2>Contact</h2>')
+    expect(footer).toContain('<span class="ag-footer-head">Source</span>')
+    expect(footer).toContain('<span class="ag-footer-head">Contact</span>')
     expect(footer).not.toContain('Projects')
   })
 
   test('carries the appearance toggle and no inline handler', async () => {
     const rendered = await landing.render(resource('https://pod.example/'), noop)
-    expect(rendered.html).toContain('class="icon theme-toggle"')
+    expect(rendered.html).toContain('class="ag-theme-toggle"')
     expect(rendered.html).not.toContain('onclick')
     expect(rendered.html).not.toContain('onClick')
   })
@@ -125,7 +125,7 @@ describe('the appearance toggle', () => {
     root.innerHTML = rendered.html
     document.body.append(root)
     const dispose = rendered.hydrate?.(root, noop)?.dispose
-    const button = root.querySelector('.theme-toggle') as HTMLButtonElement
+    const button = root.querySelector('.ag-theme-toggle') as HTMLButtonElement
     return { button, dispose, root }
   }
 
@@ -155,7 +155,7 @@ describe('the appearance toggle', () => {
   test('remembers an explicit choice and forgets the browser one', async () => {
     const first = await mount()
     first.button.click()
-    expect(localStorage.getItem('aleph-theme')).toBe('light')
+    expect(localStorage.getItem('starlight-theme')).toBe('light')
     first.dispose?.()
 
     const second = await mount()
@@ -164,7 +164,7 @@ describe('the appearance toggle', () => {
 
     second.button.click()
     second.button.click()
-    expect(localStorage.getItem('aleph-theme')).toBeNull()
+    expect(localStorage.getItem('starlight-theme')).toBe('')
   })
 
   test('stops listening once disposed', async () => {

@@ -1,0 +1,161 @@
+/* The site footer from footer.js, one band across the viewport on every page
+   of aleph.garden. Every property it depends on is set here, so the landing's
+   and Starlight's own base styles leave no trace in it. The 25rem first
+   column is the intro column of design 3a and not a token.
+
+   Stacked one step above Starlight's fixed sidebar, so the band covers the
+   sidebar where the two meet at the foot of a documentation page. Elsewhere
+   the variable is unset and the band stacks at 1. */
+.ag-footer {
+  position: relative;
+  z-index: calc(var(--sl-z-index-menu, 0) + 1);
+  box-sizing: border-box;
+  background: var(--ag-sunken);
+  border-top: var(--ag-stroke-hair) solid var(--ag-border);
+  font-family: var(--ag-font-text);
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+  color: var(--ag-text);
+}
+.ag-footer *,
+.ag-footer *::before,
+.ag-footer *::after {
+  box-sizing: inherit;
+}
+.ag-footer-grid,
+.ag-footer-base {
+  max-width: var(--ag-page-max);
+  margin: 0 auto;
+  padding-inline: var(--ag-space-8);
+}
+.ag-footer-grid {
+  display: grid;
+  grid-template-columns: 25rem repeat(2, minmax(0, 1fr));
+  gap: var(--ag-space-7) var(--ag-space-9);
+  padding-block: var(--ag-space-8) var(--ag-space-7);
+}
+.ag-footer-lab,
+.ag-footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ag-space-2);
+}
+.ag-footer-lab p {
+  margin: 0;
+  color: var(--ag-text-muted);
+}
+.ag-footer-mark {
+  align-self: flex-start;
+}
+.ag-footer-mark img {
+  display: block;
+  height: 1.75rem;
+  width: auto;
+}
+.ag-footer-head {
+  margin: 0 0 var(--ag-space-2);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--ag-text-muted);
+}
+.ag-footer a {
+  color: var(--ag-link);
+  text-decoration: none;
+}
+.ag-footer a:hover {
+  color: var(--ag-link-hover);
+  text-decoration: underline;
+}
+.ag-footer a:focus-visible {
+  outline: 2px solid var(--ag-focus);
+  outline-offset: 2px;
+}
+.ag-footer .ag-placeholder {
+  font-family: var(--ag-font-mono);
+  color: var(--ag-text-muted);
+}
+.ag-footer-base {
+  display: flex;
+  justify-content: flex-end;
+  padding-block: var(--ag-space-3);
+  border-top: var(--ag-stroke-hair) solid var(--ag-border);
+}
+
+/* One glyph per appearance, and the button's own state picks it. */
+.ag-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ag-radius-1);
+  background: none;
+  color: var(--ag-text-muted);
+  cursor: pointer;
+}
+.ag-theme-toggle:hover {
+  color: var(--ag-accent);
+  background: var(--ag-ground);
+}
+.ag-theme-toggle:focus-visible {
+  outline: 2px solid var(--ag-focus);
+  outline-offset: 2px;
+}
+.ag-theme-toggle svg {
+  display: none;
+}
+.ag-theme-toggle[data-mode='system'] svg[data-mode='system'],
+.ag-theme-toggle[data-mode='light'] svg[data-mode='light'],
+.ag-theme-toggle[data-mode='dark'] svg[data-mode='dark'] {
+  display: block;
+}
+
+@media (max-width: 60rem) {
+  .ag-footer-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .ag-footer-lab {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 48rem) {
+  .ag-footer-grid,
+  .ag-footer-base {
+    padding-inline: var(--ag-space-5);
+  }
+}
+
+/* One of the two lockups, by mode, for the footer and the header's site
+   title alike: an SVG drawn as <img> cannot read the page's custom
+   properties. An explicit choice wins, under either attribute: `data-theme`
+   on a Starlight page, `data-ag-theme` on the landing. Without one, the
+   browser's preference decides. */
+.ag-on-dark {
+  display: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-ag-theme='light']):not([data-theme='light']) .ag-on-light {
+    display: none;
+  }
+  :root:not([data-ag-theme='light']):not([data-theme='light']) .ag-on-dark {
+    display: block;
+  }
+}
+:root:is([data-ag-theme='dark'], [data-theme='dark']) .ag-on-light {
+  display: none;
+}
+:root:is([data-ag-theme='dark'], [data-theme='dark']) .ag-on-dark {
+  display: block;
+}
+:root:is([data-ag-theme='light'], [data-theme='light']) .ag-on-light {
+  display: block;
+}
+:root:is([data-ag-theme='light'], [data-theme='light']) .ag-on-dark {
+  display: none;
+}

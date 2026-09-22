@@ -1,15 +1,8 @@
 ---
-// Starlight's own footer row (pagination), then the site footer, whose
-// markup comes from footer.js so the landing page draws the same one. The
-// edit link moves into the site footer, so Starlight's is not rendered.
+// Starlight's footer slot, inside the content column, keeps only the
+// previous and next links. The site footer runs across the whole viewport
+// below the frame, so PageFrame.astro draws it.
 import Pagination from '@astrojs/starlight/components/Pagination.astro'
-import { footer } from '../footer.js'
-import light from '../brand/lockup-horizontal-short-light.svg'
-import dark from '../brand/lockup-horizontal-short-dark.svg'
-
-const { editUrl } = Astro.locals.starlightRoute
-const html = footer({ lockup: { light: light.src, dark: dark.src }, editUrl: editUrl?.href })
 ---
 
 <Pagination />
-<Fragment set:html={html} />
