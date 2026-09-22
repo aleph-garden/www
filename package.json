@@ -4,12 +4,18 @@
   "type": "module",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "dev:host": "vite host",
+    "build": "vite build host && astro build && cp -R host/dist/. dist/",
     "preview": "astro preview",
     "check": "astro check",
+    "test": "bun test",
     "deploy": "wrangler pages deploy dist --project-name=aleph-garden --branch=main"
   },
   "dependencies": {
+    "@aleph-garden/host-core": "0.1.0-dev",
+    "@aleph-garden/vitrine": "0.1.0-dev",
+    "@aleph-garden/vitrine-jsonld": "0.1.0-dev",
+    "@aleph-garden/vitrine-turtle": "0.1.0-dev",
     "@astrojs/starlight": "^0.42.1",
     "astro": "^7.3.3",
     "astro-mermaid": "^2.1.0",
@@ -18,7 +24,10 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",
+    "@happy-dom/global-registrator": "^20.14.5",
+    "@types/bun": "^1.4.2",
     "typescript": "^6",
+    "vite": "^8.3.0",
     "wrangler": "^4.133.0"
   }
 }
