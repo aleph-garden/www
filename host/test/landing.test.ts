@@ -262,6 +262,13 @@ describe('the field behind the opening', () => {
     expect(rendered.html.indexOf(SOURCES.ambient)).toBeLessThan(rendered.html.indexOf('class="band split hero"'))
   })
 
+  test('starts with the bar undocked, its home link hidden behind the large wordmark', async () => {
+    const rendered = await landing.render(resource('https://pod.example/'), noop)
+    expect(rendered.html).toContain('<header class="controls" data-docked="false">')
+    expect(rendered.html.indexOf('<header class="controls"')).toBeLessThan(rendered.html.indexOf('<div class="opening">'))
+    expect(rendered.html).toContain('<a class="home" href="/" target="_top" aria-label="Aleph Garden, home">')
+  })
+
   test('leaves the hero\'s own label rows alone', async () => {
     const rendered = await landing.render(resource('https://pod.example/'), noop)
     // `field` names the IRI and Rule rows in the hero. The ambient layer is

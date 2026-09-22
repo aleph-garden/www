@@ -3,18 +3,51 @@
    no rule of its own per mode. Where the design carried a value the token
    system has no entry for, the comment at that rule says so. */
 
-/* The controls sit at the top of the page's own column, inset to the bands'
-   padding so they line up with the text rather than with the window edge.
-   They scroll away with the page: a sticky cluster over a transparent ground
-   lets the text run through it, and giving it a ground would rebuild the bar
-   this page does without. "Docs" is the one thing here worth reading, so it
-   carries the display face; the two icons sit quieter beside it. */
+/* The bar at the top: the navigation of section 6.9 of the design language,
+   48px tall and sticky where the viewport is taller than 40rem. At the top of
+   the page it is transparent and the opening's large wordmark stands in for
+   its small one; once that has passed under the bar, `dock.ts` flips
+   `data-docked` and the bar takes its ground, its rule and the small
+   wordmark, with no transition. The rule is an inset shadow so docking moves
+   nothing on the page. The inner row sits in the page column, inset to the
+   bands' padding, so it lines up with the text. "Docs" is the one thing here
+   worth reading, so it carries the display face; the two icons sit quieter
+   beside it. */
 .controls {
+  position: relative;
+  z-index: 1;
+}
+@media (min-height: 40rem) {
+  .controls {
+    position: sticky;
+    top: 0;
+  }
+}
+.controls[data-docked='true'] {
+  background: var(--ag-ground);
+  box-shadow: inset 0 -1px 0 var(--ag-border);
+}
+.controls .bar {
   display: flex;
+  box-sizing: border-box;
   align-items: center;
-  justify-content: flex-end;
   gap: var(--ag-space-4);
-  padding: var(--ag-space-5) var(--ag-space-8) 0;
+  max-width: var(--ag-page-max);
+  height: var(--ag-space-7);
+  margin: 0 auto;
+  padding: 0 var(--ag-space-8);
+}
+.controls .home {
+  margin-right: auto;
+  visibility: hidden;
+}
+.controls[data-docked='true'] .home {
+  visibility: visible;
+}
+.controls .home img {
+  display: block;
+  height: var(--ag-space-6);
+  width: auto;
 }
 .controls .docs {
   font-family: var(--ag-font-display);
@@ -126,34 +159,34 @@
 }
 .landing .wordmark img {
   display: block;
-  height: var(--ag-space-8);
+  height: clamp(var(--ag-space-8), 7vw, var(--ag-space-9));
   width: auto;
 }
-.landing .wordmark .on-dark {
+.landing :is(.wordmark, .home) .on-dark {
   display: none;
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-ag-theme='light']):not(.theme-light) .landing .wordmark .on-light {
+  :root:not([data-ag-theme='light']):not(.theme-light) .landing :is(.wordmark, .home) .on-light {
     display: none;
   }
-  :root:not([data-ag-theme='light']):not(.theme-light) .landing .wordmark .on-dark {
+  :root:not([data-ag-theme='light']):not(.theme-light) .landing :is(.wordmark, .home) .on-dark {
     display: block;
   }
 }
-[data-ag-theme='dark'] .landing .wordmark .on-light,
-.theme-dark .landing .wordmark .on-light {
+[data-ag-theme='dark'] .landing :is(.wordmark, .home) .on-light,
+.theme-dark .landing :is(.wordmark, .home) .on-light {
   display: none;
 }
-[data-ag-theme='dark'] .landing .wordmark .on-dark,
-.theme-dark .landing .wordmark .on-dark {
+[data-ag-theme='dark'] .landing :is(.wordmark, .home) .on-dark,
+.theme-dark .landing :is(.wordmark, .home) .on-dark {
   display: block;
 }
-[data-ag-theme='light'] .landing .wordmark .on-light,
-.theme-light .landing .wordmark .on-light {
+[data-ag-theme='light'] .landing :is(.wordmark, .home) .on-light,
+.theme-light .landing :is(.wordmark, .home) .on-light {
   display: block;
 }
-[data-ag-theme='light'] .landing .wordmark .on-dark,
-.theme-light .landing .wordmark .on-dark {
+[data-ag-theme='light'] .landing :is(.wordmark, .home) .on-dark,
+.theme-light .landing :is(.wordmark, .home) .on-dark {
   display: none;
 }
 
@@ -368,16 +401,32 @@ details.source .shiki {
 
 /* The still field behind the opening, named `ambient` because `field` is
    already the hero's label rows. It sits under the content and takes no space:
-   the opening, controls and hero together, is the positioning context, and the
-   field fills its height and runs to the viewport edges past the page column.
-   `100vw` counts the scrollbar, so the landing clips what overhangs. The band
-   after the opening is not a sibling of another band, so it gets no top border
-   and the field ends without a rule under it. Each line takes the categorical
-   colour of the graph view's type channel; its width and opacity come with the
-   path, and stay low enough that the prose above keeps its own contrast. */
+   the opening is the positioning context, and it runs up under the bar, so the
+   field fills the bar's height too and runs to the viewport edges past the
+   page column. `100vw` counts the scrollbar, so the landing clips what
+   overhangs. The band after the opening is not a sibling of another band, so
+   it gets no top border and the field ends without a rule under it. Each line
+   takes the categorical colour of the graph view's type channel; its width and
+   opacity come with the path, and stay low enough that the prose above keeps
+   its own contrast. */
 .opening {
   position: relative;
   isolation: isolate;
+  margin-top: calc(-1 * var(--ag-space-7));
+  padding-top: var(--ag-space-7);
+}
+/* A quiet ground behind the wordmark and the statement: the field fades out
+   under them instead of running through the letterforms. */
+.hero .prose {
+  position: relative;
+}
+.hero .prose::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--ag-space-8));
+  z-index: -1;
+  background: radial-gradient(closest-side, var(--ag-ground) 55%, transparent);
+  pointer-events: none;
 }
 .landing {
   overflow-x: clip;

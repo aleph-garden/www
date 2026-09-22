@@ -10,6 +10,7 @@
 // this page.
 
 import { escapeHtml, fallbackView, type View } from '@aleph-garden/vitrine'
+import { installDock } from './dock.ts'
 import { installPanels } from './panels.ts'
 import { installTheme, THEME_LABEL } from './theme.ts'
 
@@ -176,7 +177,9 @@ function dispatchTable(origin: string): string {
  *  All three appearance glyphs are here and the stylesheet shows the one the
  *  button's state names. */
 function topControls(): string {
-  return `<div class="controls">
+  return `<header class="controls" data-docked="false">
+    <div class="bar">
+      <a class="home" href="/" target="_top" aria-label="Aleph Garden, home"><img class="on-light" src="/brand/lockup-horizontal-short-light.svg" alt="" /><img class="on-dark" src="/brand/lockup-horizontal-short-dark.svg" alt="" /></a>
       <a class="docs" href="/vitrine/docs/" target="_top">Docs</a>
       <a class="icon" href="https://github.com/aleph-garden" target="_top" aria-label="Aleph Garden on GitHub">
         <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.07-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A7.995 7.995 0 0 0 16 8c0-4.42-3.58-8-8-8Z" fill="currentColor"/></svg>
@@ -186,7 +189,8 @@ function topControls(): string {
         <svg data-mode="light" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><circle cx="8" cy="8" r="3.25" fill="currentColor"/><path d="M8 .75v2M8 13.25v2M.75 8h2M13.25 8h2M2.9 2.9l1.4 1.4M11.7 11.7l1.4 1.4M13.1 2.9l-1.4 1.4M4.3 11.7l-1.4 1.4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
         <svg data-mode="dark" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" focusable="false"><path d="M13.2 10.4A5.6 5.6 0 0 1 5.6 2.8a5.75 5.75 0 1 0 7.6 7.6z" fill="currentColor"/></svg>
       </button>
-    </div>`
+    </div>
+    </header>`
 }
 
 function page(
@@ -201,10 +205,10 @@ function page(
   const checklistIri = escapeHtml(`${origin}${CHECKLIST_PATH}`)
   const claimPath = CLAIM_PATH
   return `<div class="landing">
+    ${topControls()}
     <div class="page">
       <div class="opening">
         ${sources.ambient}
-        ${topControls()}
 
         <section class="band split hero">
           <div class="prose">
@@ -323,7 +327,7 @@ export function landingView(origin: string, sources: Sources): View {
       return {
         html: page(origin, sources, checklist, vocabulary, claim, statements),
         hydrate: (root) => {
-          const stops = [installTheme(root), installPanels(root)]
+          const stops = [installTheme(root), installPanels(root), installDock(root)]
           return {
             dispose: () => {
               for (const stop of stops) stop()
