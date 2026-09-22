@@ -3,13 +3,20 @@
 // path shape, so the routing lives here; `_headers` does not reach a
 // response a worker returns, so the policy on the host lives here too.
 
+// `'self'` sits beside `https:` in both lists because the two say different
+// things. `https:` admits other origins; `'self'` admits this one whatever its
+// scheme. Without it a deployment served over plain http, which is what a
+// preview on a local network is, cannot fetch its own resources, and the page
+// fails on its first request. On the deployed origin `'self'` is already https,
+// so nothing there changes, and a plaintext fetch to a third party stays
+// forbidden.
 const POLICY = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self' https: 'unsafe-inline'",
-  'img-src https: data:',
+  "img-src 'self' https: data:",
   "font-src 'self' data:",
-  'connect-src https:',
+  "connect-src 'self' https:",
   "object-src 'none'",
   "base-uri 'none'",
   "frame-ancestors 'none'",
