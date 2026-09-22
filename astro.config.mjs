@@ -5,6 +5,7 @@ import mermaid from 'astro-mermaid'
 
 // Loads the annot client in `astro dev` only, so pages can be annotated in the
 // browser. The daemon takes the project root from the query and writes there.
+/** @type {import('astro').AstroIntegration} */
 const annot = {
   name: 'annot',
   hooks: {
