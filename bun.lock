@@ -6,6 +6,7 @@
       "name": "aleph-garden-www",
       "dependencies": {
         "@aleph-garden/host-core": "0.1.0-dev",
+        "@aleph-garden/terms": "0.1.0-dev",
         "@aleph-garden/vitrine": "0.1.0-dev",
         "@aleph-garden/vitrine-jsonld": "0.1.0-dev",
         "@aleph-garden/vitrine-turtle": "0.1.0-dev",

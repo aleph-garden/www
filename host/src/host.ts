@@ -8,12 +8,17 @@ import { containerView, fallbackView } from '@aleph-garden/vitrine'
 import { jsonLdParser } from '@aleph-garden/vitrine-jsonld'
 import { parseTurtle, turtleParser } from '@aleph-garden/vitrine-turtle'
 import { gardenAddress } from './address.ts'
-import { landingView } from './landing.ts'
+import { claimView } from './claim.ts'
+import { landingView, type Sources } from './landing.ts'
 
-export const gardenHost: Host = {
+/** `sources` holds the claim in each representation the page offers, and the
+ *  view's own source, all coloured at build time. They arrive from the entry
+ *  rather than being imported here, so nothing in this module needs the build
+ *  to run. */
+export const gardenHost = (sources: Sources): Host => ({
   address: gardenAddress,
   parseTurtle,
   parsers: () => [turtleParser(), jsonLdParser()],
   session: async () => anonymousSession(),
-  views: () => [landingView(location.origin), containerView, fallbackView]
-}
+  views: () => [landingView(location.origin, sources), claimView, containerView, fallbackView]
+})

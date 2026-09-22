@@ -1,8 +1,13 @@
-import { describe, expect, test } from 'bun:test'
+import { beforeEach, describe, expect, test } from 'bun:test'
 import { type Context, createRenderer, fallbackView, type Resource } from '@aleph-garden/vitrine'
-import { CHECKLIST_PATH, LANDING_VIEW, landingView, VOCABULARY } from '../src/landing.ts'
+import { CHECKLIST_PATH, CLAIM_PATH, LANDING_VIEW, landingView, VOCABULARY } from '../src/landing.ts'
 
-const landing = landingView('https://pod.example')
+const SOURCES = {
+  turtle: '<pre class="shiki"><code>&lt;&gt; a schema:Claim</code></pre>',
+  jsonld: '<pre class="shiki"><code>{"@type":"schema:Claim"}</code></pre>',
+  view: '<pre class="shiki"><code>const claimView = {}</code></pre>'
+}
+const landing = landingView('https://pod.example', SOURCES)
 
 /** A context that records what the view asked to transclude and hands back a
  *  placeholder shaped like the runtime's own. */
@@ -38,7 +43,7 @@ describe('landingView', () => {
     // The heading is the lockup, whose alternative text is the page's name.
     expect(rendered.html).toContain('<h1 class="wordmark">')
     expect(rendered.html).toContain('alt="Aleph Garden"')
-    expect(rendered.html).toContain('The frame comes out of drawing')
+    expect(rendered.html).toContain('A view is a rule and a function')
     expect(rendered.html).toContain('What is in the lab')
   })
 
@@ -47,41 +52,69 @@ describe('landingView', () => {
     expect(rendered.html).toContain('<code>https://pod.example/</code>')
   })
 
-  test('asks for both live slots and inlines what it is handed', async () => {
+  test('asks for every live slot and inlines what it is handed', async () => {
     const { ctx, asked } = recording()
     const rendered = await landing.render(resource('https://pod.example/'), ctx)
-    expect(asked).toEqual([`https://pod.example${CHECKLIST_PATH}`, VOCABULARY])
+    // The claim is asked for twice: once for the rules to pick a view, and
+    // once with the fallback view named, which is the picker's table.
+    expect(asked).toEqual([
+      `https://pod.example${CHECKLIST_PATH}`,
+      VOCABULARY,
+      `https://pod.example${CLAIM_PATH}`,
+      `https://pod.example${CLAIM_PATH}`
+    ])
     expect(rendered.html).toContain(
       `<div data-aleph-transclude="https://pod.example${CHECKLIST_PATH}"></div>`
     )
     expect(rendered.html).toContain(`<div data-aleph-transclude="${VOCABULARY}"></div>`)
   })
 
-  test('carries the navigation, closed, with no inline handler', async () => {
+  test('offers the resource in three representations and the viewer beside it', async () => {
     const rendered = await landing.render(resource('https://pod.example/'), noop)
-    expect(rendered.html).toContain('aria-expanded="false"')
-    expect(rendered.html).toContain('class="site-nav-panel" id="site-nav-subprojects" hidden')
+    for (const source of Object.values(SOURCES)) {
+      // Coloured at build time and inserted whole, so nothing escapes it.
+      expect(rendered.html).toContain(source)
+    }
+    for (const panel of ['turtle', 'jsonld', 'table', 'resource', 'viewer']) {
+      expect(rendered.html).toContain(`data-panel="${panel}"`)
+    }
+    expect(rendered.html).toContain('<summary>Show source</summary>')
+    expect(rendered.html).not.toContain('&lt;pre class=&quot;shiki&quot;')
+  })
+
+  test('carries three controls and no inline handler', async () => {
+    const rendered = await landing.render(resource('https://pod.example/'), noop)
+    expect(rendered.html).toContain('<a class="docs" href="/vitrine/docs/" target="_top">Docs</a>')
+    expect(rendered.html).toContain('href="https://github.com/aleph-garden"')
+    expect(rendered.html).toContain('class="icon theme-toggle"')
     expect(rendered.html).not.toContain('onclick')
     expect(rendered.html).not.toContain('onClick')
   })
 
-  test('links the Vitrine card at the documentation this origin serves', async () => {
+  test('ships one glyph per appearance, so the toggle writes no markup', async () => {
     const rendered = await landing.render(resource('https://pod.example/'), noop)
-    expect(rendered.html).toContain(
-      '<a href="/vitrine/docs/" target="_top">Documentation and contracts'
-    )
+    for (const mode of ['system', 'light', 'dark']) {
+      expect(rendered.html).toContain(`<svg data-mode="${mode}"`)
+    }
   })
 
   test('links a repository only where the source is public', async () => {
     const rendered = await landing.render(resource('https://pod.example/'), noop)
     expect(rendered.html).toContain('href="https://github.com/aleph-garden/vocab"')
-    expect(rendered.html).not.toContain('github.com/aleph-garden/memex')
+    expect(rendered.html).not.toContain('<td class="name">memex</td>')
   })
 
-  test('says of the www row that this deployment is it', async () => {
+  test("leaves this project's own plumbing out of the lab", async () => {
     const rendered = await landing.render(resource('https://pod.example/'), noop)
-    expect(rendered.html).toContain('The deployment. This page is what it serves')
-    expect(rendered.html).not.toContain('The deployment still comes out of vitrine')
+    expect(rendered.html).toContain('Six repositories')
+    expect(rendered.html).not.toContain('<td class="name">www</td>')
+    expect(rendered.html).not.toContain('<td class="name">aleph</td>')
+  })
+
+  test('holds the dispatch section back until a second view exists', async () => {
+    const rendered = await landing.render(resource('https://pod.example/'), noop)
+    expect(rendered.html).not.toContain('Two resources, one table')
+    expect(rendered.html).not.toContain('class="dispatch"')
   })
 
   test("applies to the host's own IRI and nowhere else", () => {
@@ -92,61 +125,130 @@ describe('landingView', () => {
   })
 
   test('takes its IRI from the origin it is built with, so a preview greets too', () => {
-    const preview = landingView('https://deadbeef.pages.dev')
+    const preview = landingView('https://deadbeef.pages.dev', SOURCES)
     const renderer = createRenderer({ parsers: [], views: [preview, fallbackView] })
     expect(renderer.select(resource('https://deadbeef.pages.dev/'))?.id).toBe(LANDING_VIEW)
   })
 })
 
-describe('the Sub-projects menu', () => {
-  /** The page in a region, hydrated the way the runtime hydrates it. */
-  async function mounted() {
-    const region = document.createElement('div')
-    const rendered = await landing.render(resource('https://pod.example/'), noop)
-    region.innerHTML = rendered.html
-    document.body.append(region)
-    const dispose = rendered.hydrate?.(region, noop)
-    const toggle = region.querySelector('.site-nav-toggle') as HTMLButtonElement
-    const panel = region.querySelector('.site-nav-panel') as HTMLElement
-    return {
-      toggle,
-      panel,
-      done() {
-        dispose?.dispose?.()
-        region.remove()
-      }
-    }
+describe('the appearance toggle', () => {
+  const mount = async () => {
+    const rendered = await landingView('https://pod.example', SOURCES).render(
+      resource('https://pod.example/'),
+      noop
+    )
+    const root = document.createElement('div')
+    // The view's own markup, which is what the toggle is written against.
+    root.innerHTML = rendered.html
+    document.body.append(root)
+    const dispose = rendered.hydrate?.(root, noop)?.dispose
+    const button = root.querySelector('.theme-toggle') as HTMLButtonElement
+    return { button, dispose, root }
   }
 
-  test('opens and closes on a click, and says so on the button', async () => {
-    const { toggle, panel, done } = await mounted()
-    expect(panel.hidden).toBe(true)
-
-    toggle.click()
-    expect(panel.hidden).toBe(false)
-    expect(toggle.getAttribute('aria-expanded')).toBe('true')
-
-    toggle.click()
-    expect(panel.hidden).toBe(true)
-    expect(toggle.getAttribute('aria-expanded')).toBe('false')
-    done()
+  beforeEach(() => {
+    localStorage.clear()
+    document.documentElement.removeAttribute('data-ag-theme')
+    document.body.replaceChildren()
   })
 
-  test('closes on Escape', async () => {
-    const { toggle, panel, done } = await mounted()
-    toggle.click()
-    expect(panel.hidden).toBe(false)
+  test('follows the browser until it is asked not to', async () => {
+    const { button } = await mount()
+    expect(document.documentElement.hasAttribute('data-ag-theme')).toBe(false)
+    expect(button.dataset.mode).toBe('system')
+  })
 
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }))
-    expect(panel.hidden).toBe(true)
-    expect(toggle.getAttribute('aria-expanded')).toBe('false')
-    done()
+  test('cycles through light and dark and back to the browser', async () => {
+    const { button } = await mount()
+    button.click()
+    expect(document.documentElement.getAttribute('data-ag-theme')).toBe('light')
+    button.click()
+    expect(document.documentElement.getAttribute('data-ag-theme')).toBe('dark')
+    button.click()
+    expect(document.documentElement.hasAttribute('data-ag-theme')).toBe(false)
+    expect(button.dataset.mode).toBe('system')
+  })
+
+  test('remembers an explicit choice and forgets the browser one', async () => {
+    const first = await mount()
+    first.button.click()
+    expect(localStorage.getItem('aleph-theme')).toBe('light')
+    first.dispose?.()
+
+    const second = await mount()
+    expect(second.button.dataset.mode).toBe('light')
+    expect(document.documentElement.getAttribute('data-ag-theme')).toBe('light')
+
+    second.button.click()
+    second.button.click()
+    expect(localStorage.getItem('aleph-theme')).toBeNull()
   })
 
   test('stops listening once disposed', async () => {
-    const { toggle, panel, done } = await mounted()
-    done()
-    toggle.click()
-    expect(panel.hidden).toBe(true)
+    const { button, dispose } = await mount()
+    dispose?.()
+    button.click()
+    expect(document.documentElement.hasAttribute('data-ag-theme')).toBe(false)
+  })
+})
+
+describe('the lockup', () => {
+  test('ships one file per ground, chosen by the stylesheet', async () => {
+    const rendered = await landingView('https://pod.example', SOURCES).render(
+      resource('https://pod.example/'),
+      noop
+    )
+    expect(rendered.html).toContain(
+      '<img class="on-light" src="/brand/lockup-horizontal-full-light.svg" alt="Aleph Garden" />'
+    )
+    expect(rendered.html).toContain(
+      '<img class="on-dark" src="/brand/lockup-horizontal-full-dark.svg" alt="Aleph Garden" />'
+    )
+    // A media query answers the browser; this page answers `data-ag-theme`.
+    expect(rendered.html).not.toContain('prefers-color-scheme')
+  })
+})
+
+describe('the artefact panels', () => {
+  const mount = async () => {
+    const rendered = await landing.render(resource('https://pod.example/'), noop)
+    const root = document.createElement('div')
+    root.innerHTML = rendered.html
+    document.body.append(root)
+    const dispose = rendered.hydrate?.(root, noop)?.dispose
+    const shown = (group: Element) =>
+      [...group.querySelectorAll(':scope > .panel')]
+        .filter((p) => !(p as HTMLElement).hidden)
+        .map((p) => (p as HTMLElement).dataset.panel)
+    return { root, dispose, shown }
+  }
+
+  test('starts with one panel visible in each group, before any script runs', async () => {
+    const rendered = await landing.render(resource('https://pod.example/'), noop)
+    const root = document.createElement('div')
+    root.innerHTML = rendered.html
+    for (const group of root.querySelectorAll('.panels')) {
+      const visible = [...group.querySelectorAll(':scope > .panel')].filter(
+        (p) => !(p as HTMLElement).hidden
+      )
+      expect(visible).toHaveLength(1)
+    }
+  })
+
+  test('shows exactly one panel per group after a switch', async () => {
+    const { root, shown, dispose } = await mount()
+    const outer = root.querySelector('.panels') as HTMLElement
+    const picker = root.querySelector('.picker') as HTMLElement
+    expect(shown(outer)).toEqual(['resource'])
+    expect(shown(picker)).toEqual(['turtle'])
+
+    picker.querySelector<HTMLButtonElement>('.tab[data-panel="table"]')?.click()
+    expect(shown(picker)).toEqual(['table'])
+    // The outer group is untouched by a click inside its own panel.
+    expect(shown(outer)).toEqual(['resource'])
+
+    outer.querySelector<HTMLButtonElement>('.tab[data-panel="viewer"]')?.click()
+    expect(shown(outer)).toEqual(['viewer'])
+    dispose?.()
   })
 })

@@ -3,20 +3,70 @@
    no rule of its own per mode. Where the design carried a value the token
    system has no entry for, the comment at that rule says so. */
 
+/* The controls sit at the top of the page's own column, inset to the bands'
+   padding so they line up with the text rather than with the window edge.
+   They scroll away with the page: a sticky cluster over a transparent ground
+   lets the text run through it, and giving it a ground would rebuild the bar
+   this page does without. "Docs" is the one thing here worth reading, so it
+   carries the display face; the two icons sit quieter beside it. */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--ag-space-4);
+  padding: var(--ag-space-5) var(--ag-space-8) 0;
+}
+.controls .docs {
+  font-family: var(--ag-font-display);
+  font-weight: 600;
+  font-size: var(--ag-type-base);
+  line-height: var(--ag-leading-base);
+  letter-spacing: -0.005em;
+  color: var(--ag-text);
+  text-decoration: none;
+}
+.controls .docs:hover {
+  color: var(--ag-accent);
+}
+.controls .icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ag-radius-1);
+  background: none;
+  color: var(--ag-text-muted);
+  cursor: pointer;
+}
+.controls .icon:hover {
+  color: var(--ag-accent);
+  background: var(--ag-sunken);
+}
+.controls a:focus-visible,
+.controls button:focus-visible {
+  outline: 2px solid var(--ag-focus);
+  outline-offset: 2px;
+}
+
+/* One glyph per appearance, and the button's own state picks it. */
+.theme-toggle svg {
+  display: none;
+}
+.theme-toggle[data-mode='system'] svg[data-mode='system'],
+.theme-toggle[data-mode='light'] svg[data-mode='light'],
+.theme-toggle[data-mode='dark'] svg[data-mode='dark'] {
+  display: block;
+}
+
 /* The region is a reading column everywhere else on this host. This page is a
    site page and runs to the viewport edges, with its own column inside. */
 #root:has(> .landing) {
   max-width: none;
   margin: 0;
   padding: 0;
-}
-
-/* Clears the shell's fixed corner pill, which host-core's stylesheet records
-   as 61px tall. The pill names the resource on show and holds the session; it
-   is a different control from the bar below it and neither may cover the
-   other. */
-.landing {
-  padding-top: var(--ag-space-8);
 }
 
 .landing .page {
@@ -61,7 +111,16 @@
 /* --- the hero --- */
 
 /* An h1 around the lockup, so the page has one heading at the top of its
-   outline. The image's alternative text is the accessible name. */
+   outline. The image's alternative text is the accessible name; the hidden
+   one leaves the accessibility tree with its `display: none`, so the name is
+   announced once.
+
+   Two files, one per ground, chosen by the same three-tier resolution
+   host-core's stylesheet uses for the tokens: the reader's preference only
+   where no explicit theme overrides it. A `<picture>` with
+   `prefers-color-scheme` cannot do this, because it answers the browser while
+   the page answers `data-ag-theme`, and a reader who picks light on a dark
+   system then gets the wordmark for the other ground. */
 .landing .wordmark {
   margin: 0 0 var(--ag-space-7);
 }
@@ -69,6 +128,33 @@
   display: block;
   height: var(--ag-space-8);
   width: auto;
+}
+.landing .wordmark .on-dark {
+  display: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-ag-theme='light']):not(.theme-light) .landing .wordmark .on-light {
+    display: none;
+  }
+  :root:not([data-ag-theme='light']):not(.theme-light) .landing .wordmark .on-dark {
+    display: block;
+  }
+}
+[data-ag-theme='dark'] .landing .wordmark .on-light,
+.theme-dark .landing .wordmark .on-light {
+  display: none;
+}
+[data-ag-theme='dark'] .landing .wordmark .on-dark,
+.theme-dark .landing .wordmark .on-dark {
+  display: block;
+}
+[data-ag-theme='light'] .landing .wordmark .on-light,
+.theme-light .landing .wordmark .on-light {
+  display: block;
+}
+[data-ag-theme='light'] .landing .wordmark .on-dark,
+.theme-light .landing .wordmark .on-dark {
+  display: none;
 }
 
 .hero .statement {
@@ -134,6 +220,187 @@
 }
 .slot pre {
   margin: 0;
+}
+
+/* The artefact with two faces: the file, and the file running. The tabs name
+   them and the container's state picks one, so the swap writes no markup. Both
+   panels sit in the same box, and the taller one sets its height, so the box
+   does not jump when the reader switches. */
+.panels {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border: var(--ag-stroke-hair) solid var(--ag-border);
+  border-radius: var(--ag-radius-2);
+  background: var(--ag-sunken);
+  overflow: hidden;
+}
+.tabs {
+  display: flex;
+  gap: var(--ag-space-1);
+  padding: var(--ag-space-2) var(--ag-space-2) 0;
+  border-bottom: var(--ag-stroke-hair) solid var(--ag-border);
+}
+.tab {
+  padding: var(--ag-space-2) var(--ag-space-4);
+  border: 0;
+  border-radius: var(--ag-radius-1) var(--ag-radius-1) 0 0;
+  background: none;
+  color: var(--ag-text-muted);
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+  cursor: pointer;
+}
+.tab[aria-selected='true'] {
+  background: var(--ag-ground);
+  color: var(--ag-text);
+}
+.tab:focus-visible {
+  outline: 2px solid var(--ag-focus);
+  outline-offset: -2px;
+}
+/* Which panel shows is stated by `hidden` in the markup and moved by the
+   script, so the stylesheet needs no list of panel names to keep in step. */
+.panel {
+  display: block;
+  max-height: 32rem;
+  overflow: auto;
+  padding: var(--ag-space-4);
+  background: var(--ag-ground);
+}
+.panel[hidden] {
+  display: none;
+}
+.panel pre {
+  margin: 0;
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-code);
+  tab-size: 2;
+}
+
+/* The nested picker: the same machinery, set quieter, because it chooses a
+   representation inside a choice already made. */
+.panels .picker {
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+.picker > .tabs {
+  border-bottom: 0;
+  padding: var(--ag-space-2) 0 var(--ag-space-2) var(--ag-space-2);
+}
+.picker > .tabs .tab {
+  border-radius: var(--ag-radius-1);
+  border: var(--ag-stroke-hair) solid transparent;
+}
+.picker > .tabs .tab[aria-selected='true'] {
+  border-color: var(--ag-border);
+  background: var(--ag-sunken);
+}
+.picker > .panel {
+  border-top: var(--ag-stroke-hair) solid var(--ag-border);
+}
+
+/* The view's own source, folded away. A disclosure needs no script, which is
+   what the deployment's CSP prefers. */
+details.source {
+  margin-top: var(--ag-space-5);
+  border-top: var(--ag-stroke-hair) solid var(--ag-border);
+  padding-top: var(--ag-space-3);
+}
+details.source > summary {
+  cursor: pointer;
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+  color: var(--ag-text-muted);
+}
+details.source > summary:hover {
+  color: var(--ag-accent);
+}
+details.source > summary:focus-visible {
+  outline: 2px solid var(--ag-focus);
+  outline-offset: 2px;
+}
+details.source .shiki {
+  margin-top: var(--ag-space-3);
+  max-height: 28rem;
+  overflow: auto;
+}
+
+/* Code and data want more width than half a column gives them. Past the point
+   where the page's own column plus the overhang fits the viewport, the
+   artefact reaches out to the left. Below it, it stays inside, so the page
+   never scrolls sideways. */
+@media (min-width: 90rem) {
+  .split .artefact.bleed {
+    margin-left: calc(-1 * var(--ag-space-9));
+  }
+}
+
+/* Shiki emits both themes as custom properties and the page picks one, on the
+   same three tiers the tokens use. Only the colour is taken: the panel keeps
+   the page's own ground, so the code sits on the surface around it rather than
+   on a theme's background. */
+.panel .shiki,
+.panel .shiki span {
+  color: var(--shiki-light);
+  background: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-ag-theme='light']):not(.theme-light) .panel .shiki,
+  :root:not([data-ag-theme='light']):not(.theme-light) .panel .shiki span {
+    color: var(--shiki-dark);
+  }
+}
+[data-ag-theme='dark'] .panel .shiki,
+[data-ag-theme='dark'] .panel .shiki span,
+.theme-dark .panel .shiki,
+.theme-dark .panel .shiki span {
+  color: var(--shiki-dark);
+}
+[data-ag-theme='light'] .panel .shiki,
+[data-ag-theme='light'] .panel .shiki span,
+.theme-light .panel .shiki,
+.theme-light .panel .shiki span {
+  color: var(--shiki-light);
+}
+
+/* The card the view draws. Its own rules, because the view returns plain
+   elements and says nothing about how they look. */
+.claim h3 {
+  margin: 0 0 var(--ag-space-3);
+  font-family: var(--ag-font-display);
+  font-weight: 600;
+  font-size: var(--ag-type-h3);
+  line-height: var(--ag-leading-h3);
+}
+.claim .said {
+  margin: 0 0 var(--ag-space-2);
+  max-width: var(--ag-measure-prose);
+  white-space: pre-line;
+}
+.claim .when {
+  margin: 0 0 var(--ag-space-5);
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+  color: var(--ag-text-muted);
+}
+.claim .topics {
+  margin: 0;
+  display: grid;
+  gap: var(--ag-space-1) var(--ag-space-4);
+  border-top: var(--ag-stroke-hair) solid var(--ag-border);
+  padding-top: var(--ag-space-4);
+}
+.claim .topics dt {
+  font-weight: 600;
+}
+.claim .topics dd {
+  margin: 0 0 var(--ag-space-3);
+  color: var(--ag-text-muted);
+  font-size: var(--ag-type-sm);
+  line-height: var(--ag-leading-sm);
 }
 
 /* A framed artefact that may outgrow its column: the drawing, and the
@@ -285,12 +552,6 @@
 .lab .label {
   white-space: nowrap;
 }
-.lab .checked {
-  font-family: var(--ag-font-mono);
-  font-size: var(--ag-type-xs);
-  color: var(--ag-text-muted);
-}
-
 /* The word carries the label and the colour repeats it, so the badge still
    reads with no stylesheet and with no colour vision. */
 .badge {

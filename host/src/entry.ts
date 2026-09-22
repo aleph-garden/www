@@ -4,9 +4,30 @@
 // page at the same address.
 import '@aleph-garden/host-core/style.css'
 import '../../src/styles/fonts.css'
-import './chrome/nav.css'
 import './landing.css'
 import { boot } from '@aleph-garden/host-core'
+import jsonldSource from '../../public/fixtures/claim.jsonld?highlight'
+import turtleSource from '../../public/fixtures/claim.ttl?highlight'
+import viewSource from './claim.ts?highlight'
 import { gardenHost } from './host.ts'
 
-void boot(gardenHost, document.getElementById('chrome')!, document.getElementById('root')!)
+/** host-core installs its own chrome on every boot, and that chrome is the
+ *  corner pill carrying the session controls. This deployment shows neither:
+ *  the root draws the landing page with its own header, and `/-/<iri>` draws
+ *  the resource and nothing around it. The pill is therefore given a frame
+ *  that is never appended, so it exists in memory and not in the document.
+ *  The ceiling: host-core has no way for a host to decline the chrome. Once
+ *  it does, this goes and `boot` is called without a chrome element.
+ *  aleph-garden/vitrine#2 */
+function unusedChrome(): Element {
+  const frame = document.createElement('div')
+  frame.className = 'frame'
+  for (const slot of ['top-left', 'top-right', 'bottom-left', 'bottom-right']) {
+    const corner = document.createElement('div')
+    corner.className = `corner ${slot}`
+    frame.append(corner)
+  }
+  return frame
+}
+
+void boot(gardenHost({ turtle: turtleSource, jsonld: jsonldSource, view: viewSource }), unusedChrome(), document.getElementById('root')!)
