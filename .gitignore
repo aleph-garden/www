@@ -2,3 +2,6 @@ node_modules/
 dist/
 .astro/
 .wrangler/
+
+# annot: local annotation queue and screenshots
+.annot/

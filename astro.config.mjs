@@ -3,9 +3,23 @@ import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
 import mermaid from 'astro-mermaid'
 
+// Loads the annot client in `astro dev` only, so pages can be annotated in the
+// browser. The daemon takes the project root from the query and writes there.
+const annot = {
+  name: 'annot',
+  hooks: {
+    'astro:config:setup'({ command, injectScript }) {
+      if (command !== 'dev') return
+      const src = `http://localhost:26668/annot.js?root=${process.cwd()}`
+      injectScript('page', `import(${JSON.stringify(src)})`)
+    }
+  }
+}
+
 export default defineConfig({
   site: 'https://aleph.garden',
   integrations: [
+    annot,
     // Before Starlight, so the ```mermaid fences are claimed before
     // Expressive Code sees them.
     mermaid({ theme: 'neutral', autoTheme: true }),
