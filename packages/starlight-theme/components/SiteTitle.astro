@@ -1,0 +1,152 @@
+---
+/// <reference path="../virtual.d.ts" />
+// The short lockup, which leads home to aleph.garden, then the project's own
+// title and a switcher over every project on the domain. The list is fetched
+// from /projects.json when the switcher first opens, so a project added to
+// www shows up here without this site being rebuilt. Without JavaScript the
+// switcher holds one link, to the landing page, which lists them all.
+import options from 'virtual:aleph-garden/starlight-theme'
+import light from '../brand/lockup-horizontal-short-light.svg'
+import dark from '../brand/lockup-horizontal-short-dark.svg'
+
+const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute
+---
+
+<div class="ag-title">
+  <a class="ag-home" href="https://aleph.garden/" aria-label="Aleph Garden, home">
+    <img class="ag-on-light" src={light.src} width={light.width} height={light.height} alt="" />
+    <img class="ag-on-dark" src={dark.src} width={dark.width} height={dark.height} alt="" />
+  </a>
+  <span class="ag-sep" aria-hidden="true">/</span>
+  <a class="ag-project" href={siteTitleHref} translate="no">{siteTitle}</a>
+  <details class="ag-switch" data-project={options.project}>
+    <summary aria-label="Other projects">&#9662;</summary>
+    <div class="ag-menu">
+      <a class="ag-entry" href="https://aleph.garden/">
+        <span class="ag-entry-name">All projects</span>
+        <span class="ag-entry-line">The list on aleph.garden</span>
+      </a>
+    </div>
+  </details>
+</div>
+
+<script>
+  type Project = { name: string; line: string; docs?: string; source: string }
+
+  const escape = (value: string) =>
+    value.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!)
+
+  function entry(project: Project, current: string): string {
+    const href = project.docs ?? project.source
+    const here = project.docs?.startsWith(`/${current}/`) ?? false
+    return `<a class="ag-entry"${here ? ' aria-current="true"' : ''} href="${escape(href)}">
+        <span class="ag-entry-name">${escape(project.name)}</span>
+        <span class="ag-entry-line">${escape(project.line)}</span>
+      </a>`
+  }
+
+  for (const details of document.querySelectorAll<HTMLDetailsElement>('.ag-switch')) {
+    let loaded = false
+    details.addEventListener('toggle', async () => {
+      if (!details.open || loaded) return
+      loaded = true
+      const menu = details.querySelector('.ag-menu')!
+      try {
+        const response = await fetch('/projects.json')
+        if (!response.ok) return
+        const projects: Project[] = await response.json()
+        menu.innerHTML = projects.map((p) => entry(p, details.dataset.project ?? '')).join('')
+      } catch {
+        // The fallback link to the landing page stays in place.
+      }
+    })
+  }
+
+  document.addEventListener('click', (event) => {
+    for (const details of document.querySelectorAll<HTMLDetailsElement>('.ag-switch[open]')) {
+      if (!details.contains(event.target as Node)) details.open = false
+    }
+  })
+</script>
+
+<style>
+  .ag-title {
+    display: flex;
+    align-items: center;
+    gap: var(--ag-space-3);
+    min-width: 0;
+  }
+  .ag-home {
+    display: flex;
+    align-items: center;
+  }
+  .ag-home img {
+    height: 1.5rem;
+    width: auto;
+  }
+  .ag-sep {
+    color: var(--ag-border);
+    font-size: 1.25rem;
+    font-weight: 300;
+  }
+  .ag-project {
+    font-family: var(--ag-font-display);
+    font-weight: 600;
+    font-size: 0.9375rem;
+    line-height: 1.5rem;
+    letter-spacing: -0.005em;
+    color: var(--ag-text);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .ag-switch {
+    position: relative;
+  }
+  .ag-switch summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 0 var(--ag-space-1);
+    font-size: var(--ag-type-xs);
+    color: var(--ag-text-muted);
+  }
+  .ag-switch summary::-webkit-details-marker {
+    display: none;
+  }
+  .ag-menu {
+    position: absolute;
+    top: calc(100% + var(--ag-space-3));
+    left: calc(-1 * var(--ag-space-8));
+    width: 17.5rem;
+    padding: var(--ag-space-2);
+    display: flex;
+    flex-direction: column;
+    background: var(--ag-raised);
+    border: var(--ag-stroke-hair) solid var(--ag-border);
+    border-radius: var(--ag-radius-2);
+    box-shadow: 0 4px 16px rgb(19 32 37 / 0.12);
+    z-index: var(--sl-z-index-menu);
+  }
+  .ag-menu :global(.ag-entry) {
+    display: flex;
+    flex-direction: column;
+    padding: var(--ag-space-2) var(--ag-space-3);
+    border-radius: var(--ag-radius-1);
+    text-decoration: none;
+  }
+  .ag-menu :global(.ag-entry:hover),
+  .ag-menu :global(.ag-entry[aria-current]) {
+    background: var(--ag-accent-surface);
+  }
+  .ag-menu :global(.ag-entry-name) {
+    font-family: var(--ag-font-display);
+    font-weight: 600;
+    font-size: var(--ag-type-ui);
+    line-height: var(--ag-leading-ui);
+    color: var(--ag-text);
+  }
+  .ag-menu :global(.ag-entry-line) {
+    font-size: var(--ag-type-sm);
+    line-height: var(--ag-leading-sm);
+    color: var(--ag-text-muted);
+  }
+</style>

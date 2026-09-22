@@ -1,0 +1,35 @@
+{
+  "name": "@aleph-garden/starlight-theme",
+  "version": "0.1.0-dev",
+  "description": "The Aleph Garden theme for Starlight: tokens, faces, the project switcher and the site footer",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aleph-garden/www.git",
+    "directory": "packages/starlight-theme"
+  },
+  "homepage": "https://aleph.garden",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./footer": {
+      "types": "./footer.d.ts",
+      "default": "./footer.js"
+    },
+    "./fonts.css": "./fonts.css",
+    "./tokens.css": "./tokens.css",
+    "./starlight.css": "./starlight.css",
+    "./components/*": "./components/*"
+  },
+  "files": ["index.js", "index.d.ts", "footer.js", "footer.d.ts", "virtual.d.ts", "*.css", "components", "fonts", "brand"],
+  "publishConfig": {
+    "access": "public",
+    "tag": "dev"
+  },
+  "peerDependencies": {
+    "@astrojs/starlight": ">=0.42.0"
+  }
+}

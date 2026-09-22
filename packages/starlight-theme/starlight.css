@@ -1,0 +1,150 @@
+/* Starlight's custom properties, read from the --ag-* tokens. Unlayered, so
+   these win over Starlight's own layered declarations in both modes; the
+   tokens switch with `data-theme` and this mapping does not need to.
+
+   Starlight's grey ramp runs from the text colour (white) to the page
+   (black) in either mode, which is what lets one block serve both. */
+:root {
+  --sl-color-white: var(--ag-text);
+  --sl-color-gray-1: var(--ag-text);
+  --sl-color-gray-2: var(--ag-text);
+  --sl-color-gray-3: var(--ag-text-muted);
+  --sl-color-gray-4: var(--ag-text-faint);
+  --sl-color-gray-5: var(--ag-border);
+  --sl-color-gray-6: var(--ag-sunken);
+  --sl-color-gray-7: var(--ag-ground);
+  --sl-color-black: var(--ag-ground);
+
+  --sl-color-accent-low: var(--ag-accent-surface);
+  --sl-color-accent: var(--ag-accent);
+  --sl-color-accent-high: var(--ag-accent-hover);
+  --sl-color-text-accent: var(--ag-link);
+
+  --sl-color-bg-nav: var(--ag-ground);
+  --sl-color-bg-sidebar: var(--ag-ground);
+  --sl-color-bg-inline-code: var(--ag-sunken);
+  --sl-color-hairline: var(--ag-border);
+  --sl-color-hairline-light: var(--ag-border);
+  --sl-color-hairline-shade: var(--ag-border);
+
+  --sl-font: var(--ag-font-text);
+  --sl-font-mono: var(--ag-font-mono);
+}
+
+h1,
+h2,
+h3,
+h4,
+.sl-markdown-content :is(h1, h2, h3, h4) {
+  font-family: var(--ag-font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Sidebar group labels as small capitals over the project's own entries;
+   the current page on the accent surface. */
+.sidebar-content .group-label .large {
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--ag-text-muted);
+}
+.sidebar-content [aria-current='page'],
+.sidebar-content [aria-current='page']:hover,
+.sidebar-content [aria-current='page']:focus {
+  font-weight: 500;
+  color: var(--ag-accent-hover);
+  background-color: var(--ag-accent-surface);
+  border-radius: var(--ag-radius-1);
+}
+
+/* Asides take the state tokens, one per kind, with the design's full hairline
+   frame instead of Starlight's inline-start bar. */
+.starlight-aside {
+  border: var(--ag-stroke-hair) solid var(--sl-color-asides-border);
+  border-radius: var(--ag-radius-2);
+}
+.starlight-aside--note {
+  --sl-color-asides-text-accent: var(--ag-accent-hover);
+  --sl-color-asides-border: var(--ag-accent-border);
+  background-color: var(--ag-accent-surface);
+}
+.starlight-aside--tip {
+  --sl-color-asides-text-accent: var(--ag-success);
+  --sl-color-asides-border: var(--ag-success);
+  background-color: var(--ag-success-surface);
+}
+.starlight-aside--caution {
+  --sl-color-asides-text-accent: var(--ag-warning);
+  --sl-color-asides-border: var(--ag-warning);
+  background-color: var(--ag-warning-surface);
+}
+.starlight-aside--danger {
+  --sl-color-asides-text-accent: var(--ag-danger);
+  --sl-color-asides-border: var(--ag-danger);
+  background-color: var(--ag-danger-surface);
+}
+
+/* The site footer, shared with the landing page through footer.js. */
+.ag-footer {
+  margin-top: var(--ag-space-8);
+  padding-top: var(--ag-space-6);
+  border-top: var(--ag-stroke-hair) solid var(--ag-border);
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  gap: var(--ag-space-6);
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+  color: var(--ag-text);
+}
+.ag-footer .ag-footer-lab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ag-space-4);
+  color: var(--ag-text-muted);
+}
+.ag-footer .ag-footer-lab img {
+  height: 1.75rem;
+  width: auto;
+  align-self: flex-start;
+}
+.ag-footer .ag-footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ag-space-2);
+}
+.ag-footer .ag-footer-head {
+  margin-bottom: var(--ag-space-1);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ag-text-muted);
+}
+.ag-footer a {
+  color: var(--ag-link);
+  text-decoration: none;
+}
+.ag-footer a:hover {
+  color: var(--ag-link-hover);
+  text-decoration: underline;
+}
+.ag-footer .ag-placeholder {
+  font-family: var(--ag-font-mono);
+  color: var(--ag-text-muted);
+}
+@media (max-width: 50rem) {
+  .ag-footer {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* One of the two lockups, by mode. The footer and the header both carry a
+   light and a dark file, since an SVG drawn as <img> cannot read the page's
+   custom properties. */
+:root[data-theme='dark'] .ag-on-light,
+:root:not([data-theme='dark']) .ag-on-dark {
+  display: none;
+}

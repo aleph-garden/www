@@ -25,9 +25,18 @@
         "wrangler": "^4.133.0",
       },
     },
+    "packages/starlight-theme": {
+      "name": "@aleph-garden/starlight-theme",
+      "version": "0.1.0-dev",
+      "peerDependencies": {
+        "@astrojs/starlight": ">=0.42.0",
+      },
+    },
   },
   "packages": {
     "@aleph-garden/host-core": ["@aleph-garden/host-core@0.1.1-dev", "", { "dependencies": { "@aleph-garden/terms": "0.1.1-dev", "@aleph-garden/vitrine": "0.1.1-dev", "@inrupt/solid-client-authn-browser": "^5.0.0" }, "peerDependencies": { "vite": "^8.0.0" }, "optionalPeers": ["vite"] }, "sha512-IQuVmN8kkLVHG0OyfPUzseQWxaK/TSU2iXthoU4iIc5lCXt3TB5IfT5dCUBXz9s5KCg8LMxdTxHUhhxO9Z6d4w=="],
+
+    "@aleph-garden/starlight-theme": ["@aleph-garden/starlight-theme@workspace:packages/starlight-theme"],
 
     "@aleph-garden/terms": ["@aleph-garden/terms@0.1.1-dev", "", {}, "sha512-VtY0GMuBt1bExqK/hWW14kQPjyKFFqvbBQWhhTp5WG/mmPHkrSh/k72p4Ic/+nEVDG3FG7jQuObW8Ohuud+lBQ=="],
 
