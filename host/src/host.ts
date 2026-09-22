@@ -9,6 +9,7 @@ import { jsonLdParser } from '@aleph-garden/vitrine-jsonld'
 import { parseTurtle, turtleParser } from '@aleph-garden/vitrine-turtle'
 import { gardenAddress } from './address.ts'
 import { claimView } from './claim.ts'
+import { graphView } from './graph.ts'
 import { landingView, type Sources } from './landing.ts'
 
 /** `sources` holds the claim in each representation the page offers, and the
@@ -20,5 +21,11 @@ export const gardenHost = (sources: Sources): Host => ({
   parseTurtle,
   parsers: () => [turtleParser(), jsonLdParser()],
   session: async () => anonymousSession(),
-  views: () => [landingView(location.origin, sources), claimView, containerView, fallbackView]
+  views: () => [
+    landingView(location.origin, sources),
+    claimView,
+    graphView,
+    containerView,
+    fallbackView
+  ]
 })

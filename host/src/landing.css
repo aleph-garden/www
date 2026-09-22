@@ -366,6 +366,210 @@ details.source .shiki {
   color: var(--shiki-light);
 }
 
+/* Section 4 of the design language, which host-core's stylesheet does not
+   carry: the graph palette and the categorical set, values taken verbatim from
+   tokens.md sections 4.2 and 4.9. The ceiling: they live here instead of in the
+   published token layer, so a second consumer would copy them. They move to
+   host-core the next time it ships. */
+:root {
+  --graph-canvas: #fcfaf6;
+  --graph-node-stroke: #808b91;
+  --graph-edge: #869196;
+  --graph-edge-muted: #cad4d8;
+  --cat-1: #007698;
+  --cat-2: #009984;
+  --cat-3: #335900;
+  --cat-4: #c98000;
+  --cat-5: #a57be8;
+  --cat-6: #c4474b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-ag-theme='light']):not(.theme-light) {
+    --graph-canvas: #0f1213;
+    --graph-node-stroke: #606b71;
+    --graph-edge: #5a6468;
+    --graph-edge-muted: #2b3236;
+    --cat-1: #00c2f9;
+    --cat-2: #008472;
+    --cat-3: #4d8300;
+    --cat-4: #ffad3f;
+    --cat-5: #8156c0;
+    --cat-6: #ffbebb;
+  }
+}
+[data-ag-theme='dark'],
+.theme-dark {
+  --graph-canvas: #0f1213;
+  --graph-node-stroke: #606b71;
+  --graph-edge: #5a6468;
+  --graph-edge-muted: #2b3236;
+  --cat-1: #00c2f9;
+  --cat-2: #008472;
+  --cat-3: #4d8300;
+  --cat-4: #ffad3f;
+  --cat-5: #8156c0;
+  --cat-6: #ffbebb;
+}
+[data-ag-theme='light'],
+.theme-light {
+  --graph-canvas: #fcfaf6;
+  --graph-node-stroke: #808b91;
+  --graph-edge: #869196;
+  --graph-edge-muted: #cad4d8;
+  --cat-1: #007698;
+  --cat-2: #009984;
+  --cat-3: #335900;
+  --cat-4: #c98000;
+  --cat-5: #a57be8;
+  --cat-6: #c4474b;
+}
+
+.graph {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ag-space-3);
+}
+.graph svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  background: var(--graph-canvas);
+  border: var(--ag-stroke-hair) solid var(--ag-border);
+  border-radius: var(--ag-radius-2);
+}
+
+/* 4.2: an IRI subject is a rounded rectangle with its label inside, and the
+   stroke is what bounds it. Hue says nothing here until the reader asks. */
+.graph .node rect {
+  fill: var(--ag-raised);
+  stroke: var(--graph-node-stroke);
+  stroke-width: 1.5;
+}
+.graph .node text {
+  fill: var(--ag-text);
+  font-family: var(--ag-font-mono);
+  font-size: 12px;
+}
+
+/* 4.3: a link is a solid arrow, an rdf:type edge is dashed and unarrowed,
+   because it says what a thing is rather than pointing at another thing. */
+.graph .edge {
+  stroke: var(--graph-edge);
+  stroke-width: 1;
+}
+.graph .edge-type {
+  stroke: var(--graph-edge-muted);
+  stroke-dasharray: 3 3;
+}
+.graph marker path {
+  fill: var(--graph-edge);
+}
+
+/* 4.1: the reader chooses what colour means, and the default is nothing. */
+.graph[data-colour='type'] .node[data-type='1'] rect,
+.graph[data-colour='space'] .node[data-space='1'] rect {
+  stroke: var(--cat-1);
+}
+.graph[data-colour='type'] .node[data-type='2'] rect,
+.graph[data-colour='space'] .node[data-space='2'] rect {
+  stroke: var(--cat-2);
+}
+.graph[data-colour='type'] .node[data-type='3'] rect,
+.graph[data-colour='space'] .node[data-space='3'] rect {
+  stroke: var(--cat-3);
+}
+.graph[data-colour='type'] .node[data-type='4'] rect,
+.graph[data-colour='space'] .node[data-space='4'] rect {
+  stroke: var(--cat-4);
+}
+.graph[data-colour='type'] .node[data-type='5'] rect,
+.graph[data-colour='space'] .node[data-space='5'] rect {
+  stroke: var(--cat-5);
+}
+.graph[data-colour='type'] .node[data-type='6'] rect,
+.graph[data-colour='space'] .node[data-space='6'] rect {
+  stroke: var(--cat-6);
+}
+.graph[data-colour='type'] .node rect,
+.graph[data-colour='space'] .node rect {
+  stroke-width: 2;
+}
+
+.graph-control {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ag-space-2);
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+}
+.graph-control-label {
+  color: var(--ag-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.graph-swap {
+  padding: 2px var(--ag-space-3);
+  border: var(--ag-stroke-hair) solid var(--ag-border);
+  border-radius: 999px;
+  background: none;
+  color: var(--ag-text-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.graph-swap[aria-pressed='true'] {
+  border-color: var(--ag-accent);
+  background: var(--ag-accent-surface);
+  color: var(--ag-accent);
+}
+.graph-swap:focus-visible {
+  outline: 2px solid var(--ag-focus);
+  outline-offset: 2px;
+}
+
+/* One key at a time, for the channel the reader picked. */
+.graph-key {
+  display: none;
+  flex-wrap: wrap;
+  gap: var(--ag-space-2) var(--ag-space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+  color: var(--ag-text-muted);
+}
+.graph[data-colour='type'] .graph-key[data-channel='type'],
+.graph[data-colour='space'] .graph-key[data-channel='space'] {
+  display: flex;
+}
+.graph-key li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ag-space-2);
+}
+.graph-key .swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  border: 2px solid var(--graph-node-stroke);
+}
+.graph-key li[data-slot='1'] .swatch { border-color: var(--cat-1); }
+.graph-key li[data-slot='2'] .swatch { border-color: var(--cat-2); }
+.graph-key li[data-slot='3'] .swatch { border-color: var(--cat-3); }
+.graph-key li[data-slot='4'] .swatch { border-color: var(--cat-4); }
+.graph-key li[data-slot='5'] .swatch { border-color: var(--cat-5); }
+.graph-key li[data-slot='6'] .swatch { border-color: var(--cat-6); }
+
+.graph figcaption,
+.graph-empty {
+  margin: 0;
+  color: var(--ag-text-muted);
+  font-size: var(--ag-type-sm);
+  line-height: var(--ag-leading-sm);
+}
+
 /* The card the view draws. Its own rules, because the view returns plain
    elements and says nothing about how they look. */
 .claim h3 {

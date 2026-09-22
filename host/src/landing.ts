@@ -269,7 +269,7 @@ function page(
         </div>
         <figure class="artefact">
           <div class="plate">${vocabulary}</div>
-          <figcaption><code>${escapeHtml(VOCABULARY)}</code>, fetched from this origin as Turtle, parsed into quads, and drawn as a table of statements by the view the rules picked for it.</figcaption>
+          <figcaption><code>${escapeHtml(VOCABULARY)}</code>, fetched from this origin as Turtle, parsed into quads, and drawn by the view the rules picked for it. Colour is off until you ask for it, because a graph has one colour channel and the reader decides what it means.</figcaption>
         </figure>
       </section>
 
