@@ -1,0 +1,19 @@
+[
+  {
+    "name": "Vitrine",
+    "line": "Turns an address into HTML. It draws this page.",
+    "docs": "/vitrine/docs/",
+    "source": "https://github.com/aleph-garden/vitrine"
+  },
+  {
+    "name": "quadpod",
+    "line": "A Solid pod whose storage is one quad store.",
+    "docs": "/quadpod/docs/",
+    "source": "https://github.com/aleph-garden/quadpod"
+  },
+  {
+    "name": "Vocabularies",
+    "line": "The terms the rest of the lab names, in Turtle.",
+    "source": "https://github.com/aleph-garden/vocab"
+  }
+]

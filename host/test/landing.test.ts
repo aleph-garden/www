@@ -1,13 +1,9 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
 import { type Context, createRenderer, fallbackView, type Resource } from '@aleph-garden/vitrine'
-import { CHECKLIST_PATH, CLAIM_PATH, LANDING_VIEW, landingView, VOCABULARY } from '../src/landing.ts'
+import projects from '../../public/projects.json'
+import { HERO_FOLDER, LANDING_VIEW, landingView, VOCABULARY } from '../src/landing.ts'
 
-const SOURCES = {
-  turtle: '<pre class="shiki"><code>&lt;&gt; a schema:Claim</code></pre>',
-  jsonld: '<pre class="shiki"><code>{"@type":"schema:Claim"}</code></pre>',
-  view: '<pre class="shiki"><code>const claimView = {}</code></pre>',
-  ambient: '<svg class="ambient" aria-hidden="true"></svg>'
-}
+const SOURCES = { ambient: '<svg class="ambient" aria-hidden="true"></svg>' }
 const landing = landingView('https://pod.example', SOURCES)
 
 /** A context that records what the view asked to transclude and hands back a
@@ -44,8 +40,9 @@ describe('landingView', () => {
     // The heading is the lockup, whose alternative text is the page's name.
     expect(rendered.html).toContain('<h1 class="wordmark">')
     expect(rendered.html).toContain('alt="Aleph Garden"')
-    expect(rendered.html).toContain('A view is a rule and a function')
-    expect(rendered.html).toContain('What is in the lab')
+    for (const heading of ['The case it started from', 'Why there are so few renderers', 'The mechanism', 'The substrate', 'Where this is heading', 'What is in the lab']) {
+      expect(rendered.html).toContain(`<h2>${heading}</h2>`)
+    }
   })
 
   test('shows the address it was matched on, which is the claim it makes', async () => {
@@ -53,40 +50,44 @@ describe('landingView', () => {
     expect(rendered.html).toContain('<code>https://pod.example/</code>')
   })
 
-  test('asks for every live slot and inlines what it is handed', async () => {
+  test('names the folder the hero will draw and asks for nothing from it yet', async () => {
     const { ctx, asked } = recording()
     const rendered = await landing.render(resource('https://pod.example/'), ctx)
-    // The claim is asked for twice: once for the rules to pick a view, and
-    // once with the fallback view named, which is the picker's table.
-    expect(asked).toEqual([
-      `https://pod.example${CHECKLIST_PATH}`,
-      VOCABULARY,
-      `https://pod.example${CLAIM_PATH}`,
-      `https://pod.example${CLAIM_PATH}`
-    ])
-    expect(rendered.html).toContain(
-      `<div data-aleph-transclude="https://pod.example${CHECKLIST_PATH}"></div>`
-    )
+    expect(rendered.html).toContain(`<code>${HERO_FOLDER}</code>`)
+    expect(asked).toEqual([VOCABULARY])
     expect(rendered.html).toContain(`<div data-aleph-transclude="${VOCABULARY}"></div>`)
   })
 
-  test('offers the resource in three representations and the viewer beside it', async () => {
+  test('lists every project from the shared file, with docs where there are any', async () => {
     const rendered = await landing.render(resource('https://pod.example/'), noop)
-    for (const source of Object.values(SOURCES)) {
-      // Coloured at build time and inserted whole, so nothing escapes it.
-      expect(rendered.html).toContain(source)
+    for (const project of projects as { name: string; docs?: string; source: string }[]) {
+      expect(rendered.html).toContain(`${project.name} &rarr;</a>`)
+      expect(rendered.html).toContain(`href="${project.source}"`)
+      if (project.docs) expect(rendered.html).toContain(`href="${project.docs}"`)
     }
-    for (const panel of ['turtle', 'jsonld', 'table', 'resource', 'viewer']) {
-      expect(rendered.html).toContain(`data-panel="${panel}"`)
-    }
-    expect(rendered.html).toContain('<summary>Show source</summary>')
-    expect(rendered.html).not.toContain('&lt;pre class=&quot;shiki&quot;')
   })
 
-  test('carries three controls and no inline handler', async () => {
+  test('lists only public repositories, each linked', async () => {
     const rendered = await landing.render(resource('https://pod.example/'), noop)
-    expect(rendered.html).toContain('<a class="docs" href="/vitrine/docs/" target="_top">Docs</a>')
-    expect(rendered.html).toContain('href="https://github.com/aleph-garden"')
+    expect(rendered.html.match(/<li class="entry">/g)).toHaveLength(4)
+    for (const name of ['vitrine', 'quadpod', 'vocab', 'wiki']) {
+      expect(rendered.html).toContain(`href="https://github.com/aleph-garden/${name}" target="_top">${name}</a>`)
+    }
+    for (const name of ['memex', 'marginalia', 'garden', 'www', 'aleph']) {
+      expect(rendered.html).not.toContain(`>${name}</a>`)
+    }
+  })
+
+  test('keeps projects out of the footer', async () => {
+    const rendered = await landing.render(resource('https://pod.example/'), noop)
+    const footer = rendered.html.slice(rendered.html.indexOf('<footer'))
+    expect(footer).toContain('<h2>Source</h2>')
+    expect(footer).toContain('<h2>Contact</h2>')
+    expect(footer).not.toContain('Projects')
+  })
+
+  test('carries the appearance toggle and no inline handler', async () => {
+    const rendered = await landing.render(resource('https://pod.example/'), noop)
     expect(rendered.html).toContain('class="icon theme-toggle"')
     expect(rendered.html).not.toContain('onclick')
     expect(rendered.html).not.toContain('onClick')
@@ -97,25 +98,6 @@ describe('landingView', () => {
     for (const mode of ['system', 'light', 'dark']) {
       expect(rendered.html).toContain(`<svg data-mode="${mode}"`)
     }
-  })
-
-  test('links a repository only where the source is public', async () => {
-    const rendered = await landing.render(resource('https://pod.example/'), noop)
-    expect(rendered.html).toContain('href="https://github.com/aleph-garden/vocab"')
-    expect(rendered.html).not.toContain('<td class="name">memex</td>')
-  })
-
-  test("leaves this project's own plumbing out of the lab", async () => {
-    const rendered = await landing.render(resource('https://pod.example/'), noop)
-    expect(rendered.html).toContain('Six repositories')
-    expect(rendered.html).not.toContain('<td class="name">www</td>')
-    expect(rendered.html).not.toContain('<td class="name">aleph</td>')
-  })
-
-  test('holds the dispatch section back until a second view exists', async () => {
-    const rendered = await landing.render(resource('https://pod.example/'), noop)
-    expect(rendered.html).not.toContain('Two resources, one table')
-    expect(rendered.html).not.toContain('class="dispatch"')
   })
 
   test("applies to the host's own IRI and nowhere else", () => {
@@ -210,72 +192,11 @@ describe('the lockup', () => {
   })
 })
 
-describe('the artefact panels', () => {
-  const mount = async () => {
-    const rendered = await landing.render(resource('https://pod.example/'), noop)
-    const root = document.createElement('div')
-    root.innerHTML = rendered.html
-    document.body.append(root)
-    const dispose = rendered.hydrate?.(root, noop)?.dispose
-    const shown = (group: Element) =>
-      [...group.querySelectorAll(':scope > .panel')]
-        .filter((p) => !(p as HTMLElement).hidden)
-        .map((p) => (p as HTMLElement).dataset.panel)
-    return { root, dispose, shown }
-  }
-
-  test('starts with one panel visible in each group, before any script runs', async () => {
-    const rendered = await landing.render(resource('https://pod.example/'), noop)
-    const root = document.createElement('div')
-    root.innerHTML = rendered.html
-    for (const group of root.querySelectorAll('.panels')) {
-      const visible = [...group.querySelectorAll(':scope > .panel')].filter(
-        (p) => !(p as HTMLElement).hidden
-      )
-      expect(visible).toHaveLength(1)
-    }
-  })
-
-  test('shows exactly one panel per group after a switch', async () => {
-    const { root, shown, dispose } = await mount()
-    const outer = root.querySelector('.panels') as HTMLElement
-    const picker = root.querySelector('.picker') as HTMLElement
-    expect(shown(outer)).toEqual(['resource'])
-    expect(shown(picker)).toEqual(['turtle'])
-
-    picker.querySelector<HTMLButtonElement>('.tab[data-panel="table"]')?.click()
-    expect(shown(picker)).toEqual(['table'])
-    // The outer group is untouched by a click inside its own panel.
-    expect(shown(outer)).toEqual(['resource'])
-
-    outer.querySelector<HTMLButtonElement>('.tab[data-panel="viewer"]')?.click()
-    expect(shown(outer)).toEqual(['viewer'])
-    dispose?.()
-  })
-})
-
 describe('the field behind the opening', () => {
-  test('puts the field the build prepared at the start of the opening', async () => {
+  test('puts the field the build prepared at the start of the opening, before the intro', async () => {
     const rendered = await landing.render(resource('https://pod.example/'), noop)
     const opening = rendered.html.indexOf('<div class="opening">')
     expect(rendered.html.indexOf(SOURCES.ambient)).toBeGreaterThan(opening)
-    expect(rendered.html.indexOf(SOURCES.ambient)).toBeLessThan(rendered.html.indexOf('class="band split hero"'))
-  })
-
-  test('starts with the bar undocked, its home link hidden behind the large wordmark', async () => {
-    const rendered = await landing.render(resource('https://pod.example/'), noop)
-    expect(rendered.html).toContain('<header class="controls" data-docked="false">')
-    expect(rendered.html.indexOf('<header class="controls"')).toBeLessThan(rendered.html.indexOf('<div class="opening">'))
-    expect(rendered.html).toContain('<a class="home" href="/" target="_top" aria-label="Aleph Garden, home">')
-  })
-
-  test('leaves the hero\'s own label rows alone', async () => {
-    const rendered = await landing.render(resource('https://pod.example/'), noop)
-    // `field` names the IRI and Rule rows in the hero. The ambient layer is
-    // absolutely positioned, so sharing the name stacked the two rows on top
-    // of each other at the corner of the page.
-    expect(rendered.html.match(/<div class="field">/g)).toHaveLength(2)
-    expect(rendered.html).toContain('<span class="field-name">IRI</span>')
-    expect(rendered.html).toContain('<span class="field-name">Rule</span>')
+    expect(rendered.html.indexOf(SOURCES.ambient)).toBeLessThan(rendered.html.indexOf('<header class="intro">'))
   })
 })

@@ -1,7 +1,6 @@
 import { documentNote, hostDocument } from '@aleph-garden/host-core/vite'
 import { defineConfig } from 'vite'
 import { ambient } from './ambient.ts'
-import { highlight } from './highlight.ts'
 
 // Assets must be addressed from the origin root: the document is served
 // under a location the host does not choose.
@@ -14,5 +13,5 @@ export default defineConfig({
   base: '/',
   publicDir: '../public',
   build: { outDir: 'dist', emptyOutDir: true },
-  plugins: [highlight(), ambient(), hostDocument(), documentNote()]
+  plugins: [ambient(), hostDocument(), documentNote()]
 })

@@ -8,14 +8,12 @@ import { containerView, fallbackView } from '@aleph-garden/vitrine'
 import { jsonLdParser } from '@aleph-garden/vitrine-jsonld'
 import { parseTurtle, turtleParser } from '@aleph-garden/vitrine-turtle'
 import { gardenAddress } from './address.ts'
-import { claimView } from './claim.ts'
 import { graphView } from './graph.ts'
 import { landingView, type Sources } from './landing.ts'
 
-/** `sources` holds what the build prepared for the landing page: the claim
- *  and the view's source, coloured, and the field. They arrive from the entry
- *  rather than being imported here, so nothing in this module needs the build
- *  to run. */
+/** `sources` holds what the build prepared for the landing page: the field
+ *  behind the opening. It arrives from the entry rather than being imported
+ *  here, so nothing in this module needs the build to run. */
 export const gardenHost = (sources: Sources): Host => ({
   address: gardenAddress,
   parseTurtle,
@@ -23,7 +21,6 @@ export const gardenHost = (sources: Sources): Host => ({
   session: async () => anonymousSession(),
   views: () => [
     landingView(location.origin, sources),
-    claimView,
     graphView,
     containerView,
     fallbackView

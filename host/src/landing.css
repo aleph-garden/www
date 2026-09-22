@@ -3,97 +3,6 @@
    no rule of its own per mode. Where the design carried a value the token
    system has no entry for, the comment at that rule says so. */
 
-/* The bar at the top: the navigation of section 6.9 of the design language,
-   48px tall and sticky where the viewport is taller than 40rem. At the top of
-   the page it is transparent and the opening's large wordmark stands in for
-   its small one; once that has passed under the bar, `dock.ts` flips
-   `data-docked` and the bar takes its ground, its rule and the small
-   wordmark, with no transition. The rule is an inset shadow so docking moves
-   nothing on the page. The inner row sits in the page column, inset to the
-   bands' padding, so it lines up with the text. "Docs" is the one thing here
-   worth reading, so it carries the display face; the two icons sit quieter
-   beside it. */
-.controls {
-  position: relative;
-  z-index: 1;
-}
-@media (min-height: 40rem) {
-  .controls {
-    position: sticky;
-    top: 0;
-  }
-}
-.controls[data-docked='true'] {
-  background: var(--ag-ground);
-  box-shadow: inset 0 -1px 0 var(--ag-border);
-}
-.controls .bar {
-  display: flex;
-  box-sizing: border-box;
-  align-items: center;
-  gap: var(--ag-space-4);
-  max-width: var(--ag-page-max);
-  height: var(--ag-space-7);
-  margin: 0 auto;
-  padding: 0 var(--ag-space-8);
-}
-.controls .home {
-  margin-right: auto;
-  visibility: hidden;
-}
-.controls[data-docked='true'] .home {
-  visibility: visible;
-}
-.controls .home img {
-  display: block;
-  height: var(--ag-space-6);
-  width: auto;
-}
-.controls .docs {
-  font-family: var(--ag-font-display);
-  font-weight: 600;
-  font-size: var(--ag-type-base);
-  line-height: var(--ag-leading-base);
-  letter-spacing: -0.005em;
-  color: var(--ag-text);
-  text-decoration: none;
-}
-.controls .docs:hover {
-  color: var(--ag-accent);
-}
-.controls .icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
-  padding: 0;
-  border: 0;
-  border-radius: var(--ag-radius-1);
-  background: none;
-  color: var(--ag-text-muted);
-  cursor: pointer;
-}
-.controls .icon:hover {
-  color: var(--ag-accent);
-  background: var(--ag-sunken);
-}
-.controls a:focus-visible,
-.controls button:focus-visible {
-  outline: 2px solid var(--ag-focus);
-  outline-offset: 2px;
-}
-
-/* One glyph per appearance, and the button's own state picks it. */
-.theme-toggle svg {
-  display: none;
-}
-.theme-toggle[data-mode='system'] svg[data-mode='system'],
-.theme-toggle[data-mode='light'] svg[data-mode='light'],
-.theme-toggle[data-mode='dark'] svg[data-mode='dark'] {
-  display: block;
-}
-
 /* The region is a reading column everywhere else on this host. This page is a
    site page and runs to the viewport edges, with its own column inside. */
 #root:has(> .landing) {
@@ -102,325 +11,48 @@
   padding: 0;
 }
 
+.landing {
+  overflow-x: clip;
+}
+
 .landing .page {
   max-width: var(--ag-page-max);
   margin: 0 auto;
 }
 
-.band {
+/* --- the layout: the intro stands, the content runs --- */
+
+/* 25rem is the intro column of design 3a and not a token. `clip` on the
+   landing is not a scroll container, so the intro can still stick. */
+.layout {
+  display: grid;
+  grid-template-columns: 25rem minmax(0, 1fr);
+  gap: var(--ag-space-9);
+  align-items: start;
   padding: var(--ag-space-9) var(--ag-space-8);
 }
-.band + .band {
-  border-top: var(--ag-stroke-hair) solid var(--ag-border);
-}
-
-.split {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: var(--ag-space-9);
-  align-items: center;
-}
-
-.landing h2 {
-  margin: 0 0 var(--ag-space-5);
-}
-
-.prose p {
-  margin: 0 0 var(--ag-space-4);
-}
-.prose p:last-child {
-  margin-bottom: 0;
-}
-.prose strong {
-  font-weight: 600;
-}
-.prose .caveat {
-  margin: var(--ag-space-4) 0 0;
-  color: var(--ag-text-muted);
-  font-size: var(--ag-type-ui);
-  line-height: var(--ag-leading-ui);
-}
-
-/* --- the hero --- */
-
-/* An h1 around the lockup, so the page has one heading at the top of its
-   outline. The image's alternative text is the accessible name; the hidden
-   one leaves the accessibility tree with its `display: none`, so the name is
-   announced once.
-
-   Two files, one per ground, chosen by the same three-tier resolution
-   host-core's stylesheet uses for the tokens: the reader's preference only
-   where no explicit theme overrides it. A `<picture>` with
-   `prefers-color-scheme` cannot do this, because it answers the browser while
-   the page answers `data-ag-theme`, and a reader who picks light on a dark
-   system then gets the wordmark for the other ground. */
-.landing .wordmark {
-  margin: 0 0 var(--ag-space-7);
-}
-.landing .wordmark img {
-  display: block;
-  height: clamp(var(--ag-space-8), 7vw, var(--ag-space-9));
-  width: auto;
-}
-.landing :is(.wordmark, .home) .on-dark {
-  display: none;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-ag-theme='light']):not(.theme-light) .landing :is(.wordmark, .home) .on-light {
-    display: none;
-  }
-  :root:not([data-ag-theme='light']):not(.theme-light) .landing :is(.wordmark, .home) .on-dark {
-    display: block;
-  }
-}
-[data-ag-theme='dark'] .landing :is(.wordmark, .home) .on-light,
-.theme-dark .landing :is(.wordmark, .home) .on-light {
-  display: none;
-}
-[data-ag-theme='dark'] .landing :is(.wordmark, .home) .on-dark,
-.theme-dark .landing :is(.wordmark, .home) .on-dark {
-  display: block;
-}
-[data-ag-theme='light'] .landing :is(.wordmark, .home) .on-light,
-.theme-light .landing :is(.wordmark, .home) .on-light {
-  display: block;
-}
-[data-ag-theme='light'] .landing :is(.wordmark, .home) .on-dark,
-.theme-light .landing :is(.wordmark, .home) .on-dark {
-  display: none;
-}
-
-.hero .statement {
-  margin: 0;
-  font-family: var(--ag-font-display);
-  font-weight: 600;
-  font-size: var(--ag-type-h2);
-  line-height: var(--ag-leading-h2);
-  letter-spacing: -0.01em;
-}
-.hero .byline {
-  margin: var(--ag-space-5) 0 0;
-  font-size: var(--ag-type-ui);
-  line-height: var(--ag-leading-ui);
-  color: var(--ag-text-muted);
-}
-
-/* --- the artefact beside each block of prose --- */
-
-.artefact {
-  margin: 0;
-}
-
-.field {
+.intro {
+  position: sticky;
+  top: var(--ag-space-8);
   display: flex;
-  gap: var(--ag-space-3);
-  align-items: baseline;
-  margin-bottom: var(--ag-space-1);
-}
-.field + .field {
-  margin-bottom: var(--ag-space-4);
-}
-/* 2.5rem is the width of the wider of the two names. The measure tokens are
-   page columns and none of them is a label width. */
-.field-name {
-  flex: none;
-  min-width: 2.5rem;
-  font-size: var(--ag-type-2xs);
-  line-height: var(--ag-leading-2xs);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--ag-text-muted);
-}
-.field code {
-  font-family: var(--ag-font-mono);
-  font-size: var(--ag-type-xs);
-  line-height: var(--ag-leading-xs);
-  overflow-wrap: anywhere;
-  user-select: all;
-}
-.field code.muted {
-  color: var(--ag-text-muted);
+  flex-direction: column;
+  gap: var(--ag-space-5);
 }
 
-/* A transcluded child between two rules: the file's own text, at the size the
-   type scale gives code. */
-.slot {
-  min-height: 8rem;
-  padding: var(--ag-space-5) 0;
-  border-top: var(--ag-stroke-hair) solid var(--ag-border-strong);
-  border-bottom: var(--ag-stroke-hair) solid var(--ag-border);
-}
-.slot pre {
-  margin: 0;
-}
-
-/* The artefact with two faces: the file, and the file running. The tabs name
-   them and the container's state picks one, so the swap writes no markup. Both
-   panels sit in the same box, and the taller one sets its height, so the box
-   does not jump when the reader switches. */
-.panels {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  border: var(--ag-stroke-hair) solid var(--ag-border);
-  border-radius: var(--ag-radius-2);
-  background: var(--ag-sunken);
-  overflow: hidden;
-}
-.tabs {
-  display: flex;
-  gap: var(--ag-space-1);
-  padding: var(--ag-space-2) var(--ag-space-2) 0;
-  border-bottom: var(--ag-stroke-hair) solid var(--ag-border);
-}
-.tab {
-  padding: var(--ag-space-2) var(--ag-space-4);
-  border: 0;
-  border-radius: var(--ag-radius-1) var(--ag-radius-1) 0 0;
-  background: none;
-  color: var(--ag-text-muted);
-  font-family: var(--ag-font-mono);
-  font-size: var(--ag-type-xs);
-  line-height: var(--ag-leading-xs);
-  cursor: pointer;
-}
-.tab[aria-selected='true'] {
-  background: var(--ag-ground);
-  color: var(--ag-text);
-}
-.tab:focus-visible {
-  outline: 2px solid var(--ag-focus);
-  outline-offset: -2px;
-}
-/* Which panel shows is stated by `hidden` in the markup and moved by the
-   script, so the stylesheet needs no list of panel names to keep in step. */
-.panel {
-  display: block;
-  max-height: 32rem;
-  overflow: auto;
-  padding: var(--ag-space-4);
-  background: var(--ag-ground);
-}
-.panel[hidden] {
-  display: none;
-}
-.panel pre {
-  margin: 0;
-  font-family: var(--ag-font-mono);
-  font-size: var(--ag-type-xs);
-  line-height: var(--ag-leading-code);
-  tab-size: 2;
-}
-
-/* The nested picker: the same machinery, set quieter, because it chooses a
-   representation inside a choice already made. */
-.panels .picker {
-  border: 0;
-  border-radius: 0;
-  background: none;
-}
-.picker > .tabs {
-  border-bottom: 0;
-  padding: var(--ag-space-2) 0 var(--ag-space-2) var(--ag-space-2);
-}
-.picker > .tabs .tab {
-  border-radius: var(--ag-radius-1);
-  border: var(--ag-stroke-hair) solid transparent;
-}
-.picker > .tabs .tab[aria-selected='true'] {
-  border-color: var(--ag-border);
-  background: var(--ag-sunken);
-}
-.picker > .panel {
-  border-top: var(--ag-stroke-hair) solid var(--ag-border);
-}
-
-/* The view's own source, folded away. A disclosure needs no script, which is
-   what the deployment's CSP prefers. */
-details.source {
-  margin-top: var(--ag-space-5);
-  border-top: var(--ag-stroke-hair) solid var(--ag-border);
-  padding-top: var(--ag-space-3);
-}
-details.source > summary {
-  cursor: pointer;
-  font-family: var(--ag-font-mono);
-  font-size: var(--ag-type-xs);
-  color: var(--ag-text-muted);
-}
-details.source > summary:hover {
-  color: var(--ag-accent);
-}
-details.source > summary:focus-visible {
-  outline: 2px solid var(--ag-focus);
-  outline-offset: 2px;
-}
-details.source .shiki {
-  margin-top: var(--ag-space-3);
-  max-height: 28rem;
-  overflow: auto;
-}
-
-/* Code and data want more width than half a column gives them. Past the point
-   where the page's own column plus the overhang fits the viewport, the
-   artefact reaches out to the left. Below it, it stays inside, so the page
-   never scrolls sideways. */
-@media (min-width: 90rem) {
-  .split .artefact.bleed {
-    margin-left: calc(-1 * var(--ag-space-9));
-  }
-}
-
-/* Shiki emits both themes as custom properties and the page picks one, on the
-   same three tiers the tokens use. Only the colour is taken: the panel keeps
-   the page's own ground, so the code sits on the surface around it rather than
-   on a theme's background. */
-.panel .shiki,
-.panel .shiki span {
-  color: var(--shiki-light);
-  background: none;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-ag-theme='light']):not(.theme-light) .panel .shiki,
-  :root:not([data-ag-theme='light']):not(.theme-light) .panel .shiki span {
-    color: var(--shiki-dark);
-  }
-}
-[data-ag-theme='dark'] .panel .shiki,
-[data-ag-theme='dark'] .panel .shiki span,
-.theme-dark .panel .shiki,
-.theme-dark .panel .shiki span {
-  color: var(--shiki-dark);
-}
-[data-ag-theme='light'] .panel .shiki,
-[data-ag-theme='light'] .panel .shiki span,
-.theme-light .panel .shiki,
-.theme-light .panel .shiki span {
-  color: var(--shiki-light);
-}
-
-/* The still field behind the opening, named `ambient` because `field` is
-   already the hero's label rows. It sits under the content and takes no space:
-   the opening is the positioning context, and it runs up under the bar, so the
-   field fills the bar's height too and runs to the viewport edges past the
-   page column. `100vw` counts the scrollbar, so the landing clips what
-   overhangs. The band after the opening is not a sibling of another band, so
-   it gets no top border and the field ends without a rule under it. Each line
-   takes the categorical colour of the graph view's type channel; its width and
-   opacity come with the path, and stay low enough that the prose above keeps
-   its own contrast. */
+/* The still field behind the opening, named `ambient` because `field` names
+   the graph view's own flow field. It sits under the content and takes no
+   space: the opening is the positioning context, and the field runs to the
+   viewport edges past the page column. `100vw` counts the scrollbar, so the
+   landing clips what overhangs. Each line takes the categorical colour of the
+   graph view's type channel; its width and opacity come with the path, and
+   stay low enough that the prose above keeps its own contrast. */
 .opening {
   position: relative;
   isolation: isolate;
-  margin-top: calc(-1 * var(--ag-space-7));
-  padding-top: var(--ag-space-7);
 }
-/* A quiet ground behind the wordmark and the statement: the field fades out
-   under them instead of running through the letterforms. */
-.hero .prose {
-  position: relative;
-}
-.hero .prose::before {
+/* A quiet ground behind the intro: the field fades out under it instead of
+   running through the letterforms. */
+.intro::before {
   content: '';
   position: absolute;
   inset: calc(-1 * var(--ag-space-8));
@@ -428,15 +60,14 @@ details.source .shiki {
   background: radial-gradient(closest-side, var(--ag-ground) 55%, transparent);
   pointer-events: none;
 }
-.landing {
-  overflow-x: clip;
-}
+
 .ambient {
   position: absolute;
   top: 0;
-  /* The tail runs on into the next band's top padding, which is empty. The
-     height is explicit because an SVG takes it from its viewBox otherwise. */
-  height: calc(100% + var(--ag-space-9));
+  /* The head of the page only: it runs out behind the first screen. The height
+     is explicit because an SVG takes it from its viewBox otherwise. 35rem is
+     the depth design 3a gives it and not a token. */
+  height: 35rem;
   left: calc(50% - 50vw);
   z-index: -1;
   width: 100vw;
@@ -455,6 +86,192 @@ details.source .shiki {
 .ambient [data-slot='4'] { stroke: var(--cat-4); }
 .ambient [data-slot='5'] { stroke: var(--cat-5); }
 .ambient [data-slot='6'] { stroke: var(--cat-6); }
+
+
+.intro .statement {
+  margin: 0;
+  font-size: var(--ag-type-h3);
+  line-height: var(--ag-leading-h3);
+  text-wrap: pretty;
+}
+.intro .byline {
+  margin: 0;
+  color: var(--ag-text-muted);
+}
+
+/* --- the projects, under the intro --- */
+
+.projects {
+  margin-top: var(--ag-space-2);
+  padding-top: var(--ag-space-5);
+  border-top: var(--ag-stroke-hair) solid var(--ag-border);
+}
+.landing .projects h2,
+.landing .site-footer h2 {
+  margin: 0 0 var(--ag-space-4);
+  font-family: var(--ag-font-text);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--ag-text-muted);
+}
+.projects ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.project {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ag-space-1);
+}
+.project + .project {
+  margin-top: var(--ag-space-4);
+  padding-top: var(--ag-space-4);
+  border-top: var(--ag-stroke-hair) dotted var(--ag-border);
+}
+.project-name {
+  font-family: var(--ag-font-display);
+  font-weight: 600;
+  font-size: var(--ag-type-prose);
+  line-height: var(--ag-leading-base);
+  letter-spacing: -0.005em;
+}
+.project-line {
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+  color: var(--ag-text-muted);
+}
+.project-ways {
+  display: flex;
+  gap: var(--ag-space-4);
+  margin-top: var(--ag-space-1);
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+}
+
+/* --- the content column --- */
+
+.content {
+  padding-top: var(--ag-space-2);
+}
+.content section + section {
+  margin-top: var(--ag-space-9);
+}
+.content h2 {
+  margin: 0 0 var(--ag-space-5);
+}
+.content p {
+  max-width: 35rem;
+  margin: 0 0 var(--ag-space-4);
+  text-wrap: pretty;
+}
+.content p:last-child {
+  margin-bottom: 0;
+}
+.content strong {
+  font-weight: 600;
+}
+.content code {
+  font-family: var(--ag-font-mono);
+  font-size: 0.94em;
+  overflow-wrap: anywhere;
+}
+.content .caveat {
+  color: var(--ag-text-muted);
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+}
+
+/* --- the artefacts in the content column --- */
+
+.artefact {
+  margin: var(--ag-space-7) 0;
+}
+.hero .artefact {
+  margin-top: 0;
+}
+
+/* A figure whose drawing is not built yet: the address it will draw, and one
+   muted sentence saying so. */
+.artefact-head {
+  padding: var(--ag-space-2) var(--ag-space-4);
+  background: var(--ag-sunken);
+  border-bottom: var(--ag-stroke-hair) solid var(--ag-border);
+}
+.artefact-head code {
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+  color: var(--ag-text-muted);
+  user-select: all;
+}
+.artefact.pending {
+  border: var(--ag-stroke-hair) solid var(--ag-border);
+  border-radius: var(--ag-radius-2);
+  background: var(--ag-raised);
+  overflow: hidden;
+}
+.content .artefact-body {
+  max-width: none;
+  margin: 0;
+  padding: var(--ag-space-8) var(--ag-space-5);
+  color: var(--ag-text-muted);
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+  text-align: center;
+}
+
+/* --- the lockup --- */
+
+/* An h1 around the lockup, so the page has one heading at the top of its
+   outline. The image's alternative text is the accessible name; the hidden
+   one leaves the accessibility tree with its `display: none`, so the name is
+   announced once.
+
+   Two files, one per ground, chosen by the same three-tier resolution
+   host-core's stylesheet uses for the tokens: the reader's preference only
+   where no explicit theme overrides it. A `<picture>` with
+   `prefers-color-scheme` cannot do this, because it answers the browser while
+   the page answers `data-ag-theme`, and a reader who picks light on a dark
+   system then gets the wordmark for the other ground. */
+.landing .wordmark {
+  margin: 0 0 var(--ag-space-4);
+}
+.landing .wordmark img {
+  display: block;
+  /* 3.5rem is the lockup height of design 3a and not a token. */
+  height: 3.5rem;
+  width: auto;
+}
+.landing :is(.wordmark, .footer-mark) .on-dark {
+  display: none;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-ag-theme='light']):not(.theme-light) .landing :is(.wordmark, .footer-mark) .on-light {
+    display: none;
+  }
+  :root:not([data-ag-theme='light']):not(.theme-light) .landing :is(.wordmark, .footer-mark) .on-dark {
+    display: block;
+  }
+}
+[data-ag-theme='dark'] .landing :is(.wordmark, .footer-mark) .on-light,
+.theme-dark .landing :is(.wordmark, .footer-mark) .on-light {
+  display: none;
+}
+[data-ag-theme='dark'] .landing :is(.wordmark, .footer-mark) .on-dark,
+.theme-dark .landing :is(.wordmark, .footer-mark) .on-dark {
+  display: block;
+}
+[data-ag-theme='light'] .landing :is(.wordmark, .footer-mark) .on-light,
+.theme-light .landing :is(.wordmark, .footer-mark) .on-light {
+  display: block;
+}
+[data-ag-theme='light'] .landing :is(.wordmark, .footer-mark) .on-dark,
+.theme-light .landing :is(.wordmark, .footer-mark) .on-dark {
+  display: none;
+}
 
 /* Section 4 of the design language, which host-core's stylesheet does not
    carry: the graph palette and the categorical set, values taken verbatim from
@@ -660,43 +477,6 @@ details.source .shiki {
   line-height: var(--ag-leading-sm);
 }
 
-/* The card the view draws. Its own rules, because the view returns plain
-   elements and says nothing about how they look. */
-.claim h3 {
-  margin: 0 0 var(--ag-space-3);
-  font-family: var(--ag-font-display);
-  font-weight: 600;
-  font-size: var(--ag-type-h3);
-  line-height: var(--ag-leading-h3);
-}
-.claim .said {
-  margin: 0 0 var(--ag-space-2);
-  max-width: var(--ag-measure-prose);
-  white-space: pre-line;
-}
-.claim .when {
-  margin: 0 0 var(--ag-space-5);
-  font-family: var(--ag-font-mono);
-  font-size: var(--ag-type-xs);
-  color: var(--ag-text-muted);
-}
-.claim .topics {
-  margin: 0;
-  display: grid;
-  gap: var(--ag-space-1) var(--ag-space-4);
-  border-top: var(--ag-stroke-hair) solid var(--ag-border);
-  padding-top: var(--ag-space-4);
-}
-.claim .topics dt {
-  font-weight: 600;
-}
-.claim .topics dd {
-  margin: 0 0 var(--ag-space-3);
-  color: var(--ag-text-muted);
-  font-size: var(--ag-type-sm);
-  line-height: var(--ag-leading-sm);
-}
-
 /* A framed artefact that may outgrow its column: the drawing, and the
    statement table a graph is drawn as. It scrolls inside its own box rather
    than widening the page. The name avoids `frame`, which host/index.html
@@ -788,64 +568,7 @@ details.source .shiki {
   fill: var(--ag-border-strong);
 }
 
-/* --- the two-row dispatch table --- */
 
-.dispatch {
-  border-collapse: collapse;
-  width: 100%;
-  font-size: var(--ag-type-xs);
-  line-height: var(--ag-leading-xs);
-}
-.dispatch th {
-  text-align: left;
-  font-size: var(--ag-type-2xs);
-  line-height: var(--ag-leading-2xs);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  text-transform: uppercase;
-  color: var(--ag-text-muted);
-  padding: 0 var(--ag-space-4) var(--ag-space-2) 0;
-  border-bottom: var(--ag-stroke-hair) solid var(--ag-border-strong);
-}
-.dispatch td {
-  padding: var(--ag-space-3) var(--ag-space-4) var(--ag-space-3) 0;
-  border-bottom: var(--ag-stroke-hair) solid var(--ag-border);
-  vertical-align: top;
-}
-.dispatch th:last-child,
-.dispatch td:last-child {
-  padding-right: 0;
-}
-.dispatch .name {
-  font-family: var(--ag-font-mono);
-  overflow-wrap: anywhere;
-}
-
-/* --- what is in the lab --- */
-
-/* host-core styles .lab for the shorter table this page replaces. Two of its
-   rules do not carry over: the design's rows are looser, and the last column
-   holds a sentence rather than one word. */
-.band > h2 + .caveat {
-  margin: 0 0 var(--ag-space-2);
-  max-width: var(--ag-measure-prose);
-}
-.band > .caveat + .caveat {
-  margin: 0 0 var(--ag-space-7);
-  max-width: var(--ag-measure-prose);
-}
-.lab th {
-  padding: 0 var(--ag-space-6) var(--ag-space-3) 0;
-}
-.lab td {
-  padding: var(--ag-space-4) var(--ag-space-6) var(--ag-space-4) 0;
-}
-.lab td:last-child {
-  white-space: normal;
-}
-.lab .label {
-  white-space: nowrap;
-}
 /* The word carries the label and the colour repeats it, so the badge still
    reads with no stylesheet and with no colour vision. */
 .badge {
@@ -881,23 +604,148 @@ details.source .shiki {
   color: var(--ag-text-muted);
 }
 
+
+/* --- what is in the lab --- */
+
+.lab-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ag-space-6);
+  max-width: 35rem;
+  margin: var(--ag-space-6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.entry-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ag-space-4);
+}
+.entry-head a {
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-prose);
+}
+.leader {
+  flex: 1;
+  border-bottom: var(--ag-stroke-hair) dotted var(--ag-border);
+}
+.content .entry-what {
+  margin: var(--ag-space-2) 0 0;
+  font-size: var(--ag-type-code);
+  line-height: var(--ag-leading-code);
+}
+.content .entry-evidence {
+  margin: var(--ag-space-1) 0 0;
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+  color: var(--ag-text-muted);
+}
+
+/* --- the footer, in the page's grid --- */
+
+.site-footer {
+  background: var(--ag-sunken);
+  border-top: var(--ag-stroke-hair) solid var(--ag-border);
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+}
+.footer-grid,
+.footer-base {
+  box-sizing: border-box;
+  max-width: var(--ag-page-max);
+  margin: 0 auto;
+  padding-inline: var(--ag-space-8);
+}
+.footer-grid {
+  display: grid;
+  grid-template-columns: 25rem repeat(2, minmax(0, 1fr));
+  gap: var(--ag-space-7) var(--ag-space-9);
+  padding-block: var(--ag-space-8) var(--ag-space-7);
+}
+.footer-about,
+.footer-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ag-space-2);
+}
+.footer-about p {
+  margin: 0;
+  color: var(--ag-text-muted);
+}
+.footer-mark img {
+  display: block;
+  height: 1.75rem;
+  width: auto;
+}
+.site-footer .placeholder {
+  font-family: var(--ag-font-mono);
+  color: var(--ag-text-muted);
+}
+.footer-base {
+  display: flex;
+  justify-content: flex-end;
+  padding-block: var(--ag-space-3);
+  border-top: var(--ag-stroke-hair) solid var(--ag-border);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: 0;
+  border-radius: var(--ag-radius-1);
+  background: none;
+  color: var(--ag-text-muted);
+  cursor: pointer;
+}
+.icon:hover {
+  color: var(--ag-accent);
+  background: var(--ag-ground);
+}
+.icon:focus-visible {
+  outline: 2px solid var(--ag-focus);
+  outline-offset: 2px;
+}
+
+/* One glyph per appearance, and the button's own state picks it. */
+.theme-toggle svg {
+  display: none;
+}
+.theme-toggle[data-mode='system'] svg[data-mode='system'],
+.theme-toggle[data-mode='light'] svg[data-mode='light'],
+.theme-toggle[data-mode='dark'] svg[data-mode='dark'] {
+  display: block;
+}
+
 /* --- narrow --- */
 
 /* One column below the width tokens.md section 6.5 puts two columns at. The
-   prose leads in every section: a drawing before the heading that explains it
-   reads as an interruption. */
+   intro stops standing and reads first, then the content runs under it. */
 @media (max-width: 60rem) {
-  .split {
+  .layout {
     grid-template-columns: minmax(0, 1fr);
-    gap: var(--ag-space-7);
+    gap: var(--ag-space-8);
   }
-  .split.reversed .prose {
-    order: -1;
+  .intro {
+    position: static;
+  }
+  .footer-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .footer-about {
+    grid-column: 1 / -1;
   }
 }
 
 @media (max-width: 48rem) {
-  .band {
+  .layout {
     padding: var(--ag-space-7) var(--ag-space-5);
+  }
+  .footer-grid,
+  .footer-base {
+    padding-inline: var(--ag-space-5);
   }
 }
