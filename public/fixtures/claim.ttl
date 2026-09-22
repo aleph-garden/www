@@ -9,8 +9,8 @@
 <> a schema:Claim ;
   schema:name "Why a store needs no client"@en ;
   schema:text """A store that answers at every resource's own IRI needs no client of its own.
-What a reader sees is decided by the rules that draw the resource, not by the
-application that fetched it."""@en ;
+What a reader sees is decided by the rules that draw the resource. The
+application that fetched it has no say."""@en ;
   schema:dateCreated "2026-09-22T14:02:00Z"^^xsd:dateTime ;
   prov:wasAttributedTo <https://github.com/tophcodes> ;
   schema:about <scheme.ttl#resolvable-identifier> ,

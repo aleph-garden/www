@@ -255,7 +255,7 @@ function page(
         <div class="prose">
           <h2>A view is a rule and a function</h2>
           <p>A view is an object with an id, the conditions under which it applies, and <code>render</code>. It is handed the resource, which carries its content type, its bytes, and, where the bytes are RDF, its quads as a flat array of plain objects. It returns HTML.</p>
-          <p>Worth counting is what that file does not contain, under <em>Show source</em>. No fetching, because <code>resolve</code> arrives in the context and the host decides how a request is made and whether a session signs it. No store, because the quads are plain objects and a reader walks them. No routing, no state, and no build of its own.</p>
+          <p>Under <em>Show source</em>, that file fetches nothing, keeps no state, and carries no router and no build of its own. Those jobs still exist. They sit in the host: the program that fetches, holds the session, owns the rule table, and hands a view its <code>resolve</code>. One host serves every view on a deployment, so the work is done once and each view stays this size.</p>
           <p>The lines that reach <code>schema:about</code> are where it leaves the resource. Those subjects live in a second document, getting them is one call, and what comes back is read exactly like what was already there.</p>
         </div>
       </section>
@@ -263,7 +263,7 @@ function page(
       <section class="band split">
         <div class="prose">
           <h2>Where this is heading</h2>
-          <p>The direction underneath is a platform for personal data with RDF first class rather than RDF-first, and Vitrine is the artifact that falls out of it.</p>
+          <p>The direction underneath is a platform for personal data whose storage is RDF and whose surface is ordinary reading and writing. I built the renderer first, because every other piece needs one.</p>
           <p>Writing is <strong>specified and unbuilt</strong>: one more call on the context, the change shaped as an ActivityStreams activity, the host doing the transport (<a href="https://github.com/aleph-garden/vitrine/blob/main/docs/drafts/write.md" target="_top">write.md</a>). Transclusion is <strong>built</strong>: the two live slots on this page are children the runtime mounted, each with a life of its own (<a href="/vitrine/docs/reference/transclusion/" target="_top">the reference</a>).</p>
           <p>Syncing is <strong>designed and unbuilt</strong>: convergence in the client with Automerge, the synced bytes landing in a Solid container. I found no Automerge adapter over a Solid pod anywhere, so it is an experiment rather than a plan. Today Vitrine reads and never writes.</p>
         </div>

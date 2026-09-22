@@ -26,7 +26,7 @@
   "@id": "",
   "@type": "schema:Claim",
   "name": "Why a store needs no client",
-  "text": "A store that answers at every resource's own IRI needs no client of its own.\nWhat a reader sees is decided by the rules that draw the resource, not by the\napplication that fetched it.",
+  "text": "A store that answers at every resource's own IRI needs no client of its own.\nWhat a reader sees is decided by the rules that draw the resource. The\napplication that fetched it has no say.",
   "created": "2026-09-22T14:02:00Z",
   "by": "https://github.com/tophcodes",
   "about": [
