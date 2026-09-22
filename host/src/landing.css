@@ -1,0 +1,348 @@
+/* The page at the host's own IRI. Every value here is a `--ag-` token from
+   host-core's stylesheet, so the page follows the reader's colour scheme with
+   no rule of its own per mode. Where the design carried a value the token
+   system has no entry for, the comment at that rule says so. */
+
+/* The region is a reading column everywhere else on this host. This page is a
+   site page and runs to the viewport edges, with its own column inside. */
+#root:has(> .landing) {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Clears the shell's fixed corner pill, which host-core's stylesheet records
+   as 61px tall. The pill names the resource on show and holds the session; it
+   is a different control from the bar below it and neither may cover the
+   other. */
+.landing {
+  padding-top: var(--ag-space-8);
+}
+
+.landing .page {
+  max-width: var(--ag-page-max);
+  margin: 0 auto;
+}
+
+.band {
+  padding: var(--ag-space-9) var(--ag-space-8);
+}
+.band + .band {
+  border-top: var(--ag-stroke-hair) solid var(--ag-border);
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--ag-space-9);
+  align-items: center;
+}
+
+.landing h2 {
+  margin: 0 0 var(--ag-space-5);
+}
+
+.prose p {
+  margin: 0 0 var(--ag-space-4);
+}
+.prose p:last-child {
+  margin-bottom: 0;
+}
+.prose strong {
+  font-weight: 600;
+}
+.prose .caveat {
+  margin: var(--ag-space-4) 0 0;
+  color: var(--ag-text-muted);
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+}
+
+/* --- the hero --- */
+
+/* An h1 around the lockup, so the page has one heading at the top of its
+   outline. The image's alternative text is the accessible name. */
+.landing .wordmark {
+  margin: 0 0 var(--ag-space-7);
+}
+.landing .wordmark img {
+  display: block;
+  height: var(--ag-space-8);
+  width: auto;
+}
+
+.hero .statement {
+  margin: 0;
+  font-family: var(--ag-font-display);
+  font-weight: 600;
+  font-size: var(--ag-type-h2);
+  line-height: var(--ag-leading-h2);
+  letter-spacing: -0.01em;
+}
+.hero .byline {
+  margin: var(--ag-space-5) 0 0;
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+  color: var(--ag-text-muted);
+}
+
+/* --- the artefact beside each block of prose --- */
+
+.artefact {
+  margin: 0;
+}
+
+.field {
+  display: flex;
+  gap: var(--ag-space-3);
+  align-items: baseline;
+  margin-bottom: var(--ag-space-1);
+}
+.field + .field {
+  margin-bottom: var(--ag-space-4);
+}
+/* 2.5rem is the width of the wider of the two names. The measure tokens are
+   page columns and none of them is a label width. */
+.field-name {
+  flex: none;
+  min-width: 2.5rem;
+  font-size: var(--ag-type-2xs);
+  line-height: var(--ag-leading-2xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ag-text-muted);
+}
+.field code {
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.field code.muted {
+  color: var(--ag-text-muted);
+}
+
+/* A transcluded child between two rules: the file's own text, at the size the
+   type scale gives code. */
+.slot {
+  min-height: 8rem;
+  padding: var(--ag-space-5) 0;
+  border-top: var(--ag-stroke-hair) solid var(--ag-border-strong);
+  border-bottom: var(--ag-stroke-hair) solid var(--ag-border);
+}
+.slot pre {
+  margin: 0;
+}
+
+/* A framed artefact that may outgrow its column: the drawing, and the
+   statement table a graph is drawn as. It scrolls inside its own box rather
+   than widening the page. The name avoids `frame`, which host/index.html
+   already uses for the shell's fixed corner slots. */
+.plate {
+  max-height: 30rem;
+  overflow: auto;
+  padding: var(--ag-space-4);
+  background: var(--ag-sunken);
+  border: var(--ag-stroke-hair) solid var(--ag-border);
+  border-radius: var(--ag-radius-2);
+}
+/* host-core breaks a statement table's cells at any character, which suits
+   the full reading column it was written for. In half a column that turns
+   every IRI into a one-word-per-line ribbon, so the identifier column keeps
+   its line and the plate scrolls sideways instead. */
+.plate .statements {
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+}
+.plate .statements {
+  table-layout: fixed;
+  min-width: 40rem;
+}
+.plate .statements th,
+.plate .statements td {
+  word-break: normal;
+  overflow-wrap: anywhere;
+}
+.plate .statements td:first-child {
+  width: 21rem;
+  padding-right: var(--ag-space-4);
+}
+
+.artefact figcaption {
+  margin: var(--ag-space-3) 0 0;
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+  color: var(--ag-text-muted);
+}
+.artefact figcaption code {
+  font-family: var(--ag-font-mono);
+  font-size: 1em;
+  overflow-wrap: anywhere;
+}
+
+/* --- the drawing --- */
+
+/* Its natural size, so the text inside it lands on the type scale rather than
+   being scaled by the viewBox. 420 units is the drawing's own width and not a
+   token. */
+.diagram {
+  display: block;
+  width: 420px;
+  height: auto;
+}
+.diagram-box {
+  fill: var(--ag-ground);
+  stroke: var(--ag-border-strong);
+  stroke-width: var(--ag-stroke-hair);
+}
+/* The one emphasis in the drawing, on the stage the section is about. */
+.diagram-box-key {
+  stroke: var(--ag-accent);
+  stroke-width: var(--ag-stroke-node);
+}
+.diagram-stage {
+  fill: var(--ag-text);
+  font-family: var(--ag-font-text);
+  font-size: var(--ag-type-sm);
+  font-weight: 600;
+}
+.diagram-detail {
+  fill: var(--ag-text-muted);
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+}
+.diagram-step {
+  fill: var(--ag-text-muted);
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-2xs);
+}
+.diagram-arrow {
+  fill: none;
+  stroke: var(--ag-border-strong);
+  stroke-width: var(--ag-stroke-node);
+}
+.diagram-head path {
+  fill: var(--ag-border-strong);
+}
+
+/* --- the two-row dispatch table --- */
+
+.dispatch {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+}
+.dispatch th {
+  text-align: left;
+  font-size: var(--ag-type-2xs);
+  line-height: var(--ag-leading-2xs);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  color: var(--ag-text-muted);
+  padding: 0 var(--ag-space-4) var(--ag-space-2) 0;
+  border-bottom: var(--ag-stroke-hair) solid var(--ag-border-strong);
+}
+.dispatch td {
+  padding: var(--ag-space-3) var(--ag-space-4) var(--ag-space-3) 0;
+  border-bottom: var(--ag-stroke-hair) solid var(--ag-border);
+  vertical-align: top;
+}
+.dispatch th:last-child,
+.dispatch td:last-child {
+  padding-right: 0;
+}
+.dispatch .name {
+  font-family: var(--ag-font-mono);
+  overflow-wrap: anywhere;
+}
+
+/* --- what is in the lab --- */
+
+/* host-core styles .lab for the shorter table this page replaces. Two of its
+   rules do not carry over: the design's rows are looser, and the last column
+   holds a sentence rather than one word. */
+.band > h2 + .caveat {
+  margin: 0 0 var(--ag-space-2);
+  max-width: var(--ag-measure-prose);
+}
+.band > .caveat + .caveat {
+  margin: 0 0 var(--ag-space-7);
+  max-width: var(--ag-measure-prose);
+}
+.lab th {
+  padding: 0 var(--ag-space-6) var(--ag-space-3) 0;
+}
+.lab td {
+  padding: var(--ag-space-4) var(--ag-space-6) var(--ag-space-4) 0;
+}
+.lab td:last-child {
+  white-space: normal;
+}
+.lab .label {
+  white-space: nowrap;
+}
+.lab .checked {
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+  color: var(--ag-text-muted);
+}
+
+/* The word carries the label and the colour repeats it, so the badge still
+   reads with no stylesheet and with no colour vision. */
+.badge {
+  display: inline-block;
+  padding: var(--ag-space-1) var(--ag-space-2);
+  border: var(--ag-stroke-hair) solid;
+  border-radius: var(--ag-radius-1);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+  font-weight: 600;
+}
+.badge-running,
+.badge-buildable {
+  border-color: var(--ag-success);
+  background: var(--ag-success-surface);
+  color: var(--ag-success);
+}
+.badge-prototype {
+  border-color: var(--ag-warning);
+  background: var(--ag-warning-surface);
+  color: var(--ag-warning);
+}
+.badge-specified,
+.badge-note {
+  border-color: var(--ag-border);
+  background: var(--ag-sunken);
+  color: var(--ag-text-muted);
+}
+.badge-parked {
+  border-style: dashed;
+  border-color: var(--ag-border-strong);
+  background: var(--ag-ground);
+  color: var(--ag-text-muted);
+}
+
+/* --- narrow --- */
+
+/* One column below the width tokens.md section 6.5 puts two columns at. The
+   prose leads in every section: a drawing before the heading that explains it
+   reads as an interruption. */
+@media (max-width: 60rem) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--ag-space-7);
+  }
+  .split.reversed .prose {
+    order: -1;
+  }
+}
+
+@media (max-width: 48rem) {
+  .band {
+    padding: var(--ag-space-7) var(--ag-space-5);
+  }
+}

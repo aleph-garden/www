@@ -1,0 +1,153 @@
+/* The site navigation bar and its Sub-projects menu. Reads the `--ag-` tokens
+   host-core's stylesheet declares, so the bar follows the reader's colour
+   scheme without a rule of its own per mode.
+
+   `--site-nav-shadow` is local: the token system carries no elevation ramp,
+   and a menu that drops over running text needs one. It is declared the way
+   tokens.md section 7.3 resolves a mode, so an explicit theme on an ancestor
+   still wins over the reader's preference. */
+
+:root {
+  --site-nav-shadow: 0 4px 16px rgb(19 32 37 / 0.12);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-ag-theme="light"]):not(.theme-light) {
+    --site-nav-shadow: 0 4px 16px rgb(0 0 0 / 0.5);
+  }
+}
+[data-ag-theme="dark"],
+.theme-dark {
+  --site-nav-shadow: 0 4px 16px rgb(0 0 0 / 0.5);
+}
+[data-ag-theme="light"],
+.theme-light {
+  --site-nav-shadow: 0 4px 16px rgb(19 32 37 / 0.12);
+}
+
+.site-nav {
+  position: relative;
+  /* Over the sections below it, which the menu drops across. */
+  z-index: 20;
+  background: var(--ag-ground);
+  border-bottom: var(--ag-stroke-hair) solid var(--ag-border);
+}
+
+.site-nav-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--ag-space-6);
+  max-width: var(--ag-page-max);
+  height: var(--ag-space-7);
+  margin: 0 auto;
+  padding: 0 var(--ag-space-8);
+  font-size: var(--ag-type-sm);
+  line-height: var(--ag-leading-sm);
+}
+
+.site-nav-wordmark {
+  font-family: var(--ag-font-display);
+  font-weight: 600;
+  color: var(--ag-text);
+}
+
+.site-nav-toggle {
+  display: flex;
+  align-items: center;
+  gap: var(--ag-space-2);
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: var(--ag-accent);
+  cursor: pointer;
+}
+.site-nav-toggle:hover {
+  color: var(--ag-accent-hover);
+  text-decoration: underline;
+}
+
+.site-nav-caret {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: var(--ag-stroke-node);
+  stroke-linecap: round;
+  transition: transform var(--ag-motion-short) var(--ag-ease-enter);
+}
+.site-nav-toggle[aria-expanded="true"] .site-nav-caret {
+  transform: rotate(180deg);
+}
+
+.site-nav-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: calc(100dvh - var(--ag-space-7));
+  overflow-y: auto;
+  background: var(--ag-raised);
+  border-bottom: var(--ag-stroke-hair) solid var(--ag-border);
+  box-shadow: var(--site-nav-shadow);
+}
+
+.site-nav-panel-inner {
+  max-width: var(--ag-page-max);
+  margin: 0 auto;
+  padding: var(--ag-space-7) var(--ag-space-8);
+}
+
+.site-nav-eyebrow {
+  margin: 0 0 var(--ag-space-6);
+  font-size: var(--ag-type-2xs);
+  line-height: var(--ag-leading-2xs);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ag-text-muted);
+}
+
+.site-nav-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--ag-space-6) var(--ag-space-9);
+}
+
+.site-nav-card {
+  border-top: var(--ag-stroke-hair) solid var(--ag-border);
+  padding-top: var(--ag-space-4);
+}
+.site-nav-card h3 {
+  margin: 0 0 var(--ag-space-2);
+  font-family: var(--ag-font-display);
+  font-weight: 600;
+  font-size: var(--ag-type-h3);
+  line-height: var(--ag-leading-h3);
+  letter-spacing: -0.005em;
+  color: var(--ag-text);
+}
+.site-nav-card p {
+  margin: 0 0 var(--ag-space-3);
+  font-size: var(--ag-type-sm);
+  line-height: var(--ag-leading-sm);
+  color: var(--ag-text-muted);
+}
+.site-nav-card a {
+  font-size: var(--ag-type-sm);
+}
+
+/* One column below the width two columns of cards need, which section 6.5 of
+   tokens.md puts at 60rem. */
+@media (max-width: 60rem) {
+  .site-nav-cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 48rem) {
+  .site-nav-bar {
+    padding: 0 var(--ag-space-5);
+  }
+  .site-nav-panel-inner {
+    padding: var(--ag-space-5);
+  }
+}
