@@ -1,0 +1,37 @@
+{
+  "@context": {
+    "schema": "https://schema.org/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "name": {
+      "@id": "schema:name",
+      "@language": "en"
+    },
+    "text": {
+      "@id": "schema:text",
+      "@language": "en"
+    },
+    "created": {
+      "@id": "schema:dateCreated",
+      "@type": "http://www.w3.org/2001/XMLSchema#dateTime"
+    },
+    "by": {
+      "@id": "prov:wasAttributedTo",
+      "@type": "@id"
+    },
+    "about": {
+      "@id": "schema:about",
+      "@type": "@id"
+    }
+  },
+  "@id": "",
+  "@type": "schema:Claim",
+  "name": "Why a store needs no client",
+  "text": "A store that answers at every resource's own IRI needs no client of its own.\nWhat a reader sees is decided by the rules that draw the resource, not by the\napplication that fetched it.",
+  "created": "2026-09-22T14:02:00Z",
+  "by": "https://github.com/tophcodes",
+  "about": [
+    "scheme.ttl#resolvable-identifier",
+    "scheme.ttl#content-negotiation",
+    "scheme.ttl#rule-table"
+  ]
+}
