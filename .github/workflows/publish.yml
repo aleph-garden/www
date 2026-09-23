@@ -50,4 +50,4 @@ jobs:
           found=$(node -p "require('./packages/starlight-theme/package.json').version")
           [ "$found" = "$expected" ] || { echo "package.json is $found, tag says $expected" >&2; exit 1; }
 
-      - run: npm publish packages/starlight-theme --provenance
+      - run: npm publish ./packages/starlight-theme --provenance
