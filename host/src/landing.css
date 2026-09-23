@@ -260,23 +260,6 @@
 .trip-cell[data-wide] {
   grid-column: 1 / -1;
 }
-/* The people inside the graph. host-core styles the subjects views scoped to
-   the region they draw, and here the file frame draws that region, so the
-   grid is laid out for this page. */
-.trip-inline .subjects {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
-  gap: var(--ag-space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.trip-inline .subjects-list {
-  grid-template-columns: minmax(0, 1fr);
-}
-.trip-inline .subject-item {
-  min-width: 0;
-}
 /* The runtime's region sits between the cell and the frame, so both take the
    row's height and the frames in a row line up. */
 .trip-cell > [data-aleph-view],
@@ -285,8 +268,6 @@
   box-sizing: border-box;
 }
 
-/* The category tokens are specified in tokens.md section 9 and not yet in
-   @aleph-garden/brand, so each names its specified value as the fallback. */
 .trip-dot {
   flex: none;
   width: 0.5rem;
@@ -294,12 +275,12 @@
   border-radius: 50%;
   background: var(--ag-border-strong);
 }
-.trip-dot[data-kind='txt'] { background: var(--ag-cat-3, #335900); }
-.trip-dot[data-kind='csv'] { background: var(--ag-cat-2, #009984); }
-.trip-dot[data-kind='geo'] { background: var(--ag-cat-4, #c98000); }
-.trip-dot[data-kind='md'] { background: var(--ag-cat-6, #c4474b); }
-.trip-dot[data-kind='graph'] { background: var(--ag-cat-5, #a57be8); }
-.trip-dot[data-kind='person'] { background: var(--ag-cat-1, #007698); }
+.trip-dot[data-kind='txt'] { background: var(--ag-cat-3); }
+.trip-dot[data-kind='csv'] { background: var(--ag-cat-2); }
+.trip-dot[data-kind='geo'] { background: var(--ag-cat-4); }
+.trip-dot[data-kind='md'] { background: var(--ag-cat-6); }
+.trip-dot[data-kind='graph'] { background: var(--ag-cat-5); }
+.trip-dot[data-kind='person'] { background: var(--ag-cat-1); }
 .trip-address {
   overflow: hidden;
   text-overflow: ellipsis;
