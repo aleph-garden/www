@@ -3,7 +3,7 @@
 // tokens and override the few shell rules that were written for the shorter
 // page at the same address.
 import '@aleph-garden/host-core/style.css'
-import '../../src/styles/fonts.css'
+import '@aleph-garden/brand/fonts.css'
 import '@aleph-garden/starlight-theme/footer.css'
 import './landing.css'
 import { boot } from '@aleph-garden/host-core'

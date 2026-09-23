@@ -23,8 +23,6 @@
       "types": "./theme.d.ts",
       "default": "./theme.js"
     },
-    "./fonts.css": "./fonts.css",
-    "./tokens.css": "./tokens.css",
     "./starlight.css": "./starlight.css",
     "./footer.css": "./footer.css",
     "./components/*": "./components/*"
@@ -38,9 +36,7 @@
     "theme.d.ts",
     "virtual.d.ts",
     "*.css",
-    "components",
-    "fonts",
-    "brand"
+    "components"
   ],
   "publishConfig": {
     "access": "public",
@@ -48,5 +44,8 @@
   },
   "peerDependencies": {
     "@astrojs/starlight": ">=0.42.0"
+  },
+  "dependencies": {
+    "@aleph-garden/brand": "0.1.0-dev"
   }
 }

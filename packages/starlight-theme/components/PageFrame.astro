@@ -4,8 +4,8 @@
 // link sits in the footer's Source column when the page has a source file.
 import Default from '@astrojs/starlight/components/PageFrame.astro'
 import { footer } from '../footer.js'
-import light from '../brand/lockup-horizontal-short-light.svg'
-import dark from '../brand/lockup-horizontal-short-dark.svg'
+import light from '@aleph-garden/brand/lockups/lockup-horizontal-short-light.svg'
+import dark from '@aleph-garden/brand/lockups/lockup-horizontal-short-dark.svg'
 
 const { editUrl } = Astro.locals.starlightRoute
 const html = footer({

@@ -18,8 +18,6 @@ export default function aleph({ project }) {
         updateConfig({
           customCss: [
             ...(config.customCss ?? []),
-            '@aleph-garden/starlight-theme/fonts.css',
-            '@aleph-garden/starlight-theme/tokens.css',
             '@aleph-garden/starlight-theme/starlight.css',
             '@aleph-garden/starlight-theme/footer.css'
           ],

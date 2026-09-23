@@ -181,11 +181,11 @@ describe('the lockup', () => {
       resource('https://pod.example/'),
       noop
     )
-    expect(rendered.html).toContain(
-      '<img class="on-light" src="/brand/lockup-horizontal-full-light.svg" alt="Aleph Garden" />'
+    expect(rendered.html).toMatch(
+      /<img class="on-light" src="[^"]*lockup-horizontal-full-light\.svg" alt="Aleph Garden" \/>/
     )
-    expect(rendered.html).toContain(
-      '<img class="on-dark" src="/brand/lockup-horizontal-full-dark.svg" alt="Aleph Garden" />'
+    expect(rendered.html).toMatch(
+      /<img class="on-dark" src="[^"]*lockup-horizontal-full-dark\.svg" alt="Aleph Garden" \/>/
     )
     // A media query answers the browser; this page answers `data-ag-theme`.
     expect(rendered.html).not.toContain('prefers-color-scheme')

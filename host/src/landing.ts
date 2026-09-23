@@ -10,6 +10,10 @@ import { escapeHtml, type View } from '@aleph-garden/vitrine'
 import projects from '../../public/projects.json'
 import { footer } from '@aleph-garden/starlight-theme/footer'
 import { installTheme } from '@aleph-garden/starlight-theme/theme'
+import fullDark from '@aleph-garden/brand/lockups/lockup-horizontal-full-dark.svg?url'
+import fullLight from '@aleph-garden/brand/lockups/lockup-horizontal-full-light.svg?url'
+import shortDark from '@aleph-garden/brand/lockups/lockup-horizontal-short-dark.svg?url'
+import shortLight from '@aleph-garden/brand/lockups/lockup-horizontal-short-light.svg?url'
 
 export const LANDING_VIEW = 'https://aleph.garden/views/landing'
 
@@ -104,16 +108,17 @@ function labEntry(repo: Repository): string {
 
 /** Both lockups sit in the markup and the stylesheet shows the one for the
  *  current ground. */
+const LOCKUPS = {
+  full: { light: fullLight, dark: fullDark },
+  short: { light: shortLight, dark: shortDark }
+}
 const lockup = (variant: 'full' | 'short', alt: string) =>
-  `<img class="on-light" src="/brand/lockup-horizontal-${variant}-light.svg" alt="${alt}" /><img class="on-dark" src="/brand/lockup-horizontal-${variant}-dark.svg" alt="${alt}" />`
+  `<img class="on-light" src="${LOCKUPS[variant].light}" alt="${alt}" /><img class="on-dark" src="${LOCKUPS[variant].dark}" alt="${alt}" />`
 
 /** The site footer every page on aleph.garden draws, with the link to the
  *  view that drew this one. */
 const siteFooter = footer({
-  lockup: {
-    light: '/brand/lockup-horizontal-short-light.svg',
-    dark: '/brand/lockup-horizontal-short-dark.svg'
-  },
+  lockup: LOCKUPS.short,
   source: {
     href: 'https://github.com/aleph-garden/www/blob/main/host/src/landing.ts',
     text: 'The view drawing this page'

@@ -1,3 +1,8 @@
+/* The faces and tokens every Aleph Garden surface shares, first so the
+   mapping below reads them. */
+@import "@aleph-garden/brand/fonts.css";
+@import "@aleph-garden/brand/tokens.css";
+
 /* Starlight's custom properties, read from the --ag-* tokens. Unlayered, so
    these win over Starlight's own layered declarations in both modes; the
    tokens switch with `data-theme` and this mapping does not need to.
