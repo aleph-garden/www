@@ -1,16 +1,20 @@
 ---
 // Starlight's own frame, then the site footer across the full viewport width
 // below it, the same markup and stylesheet the landing page draws. The edit
-// link sits in the footer's Source column when the page has a source file.
+// link and the date of the source file's last commit sit in the footer's
+// Source column when the page has a source file.
 import Default from '@astrojs/starlight/components/PageFrame.astro'
 import { footer } from '../footer.js'
+import { lastEdited } from '../last-edited.js'
+import options from 'virtual:aleph-garden/starlight-theme'
 import light from '@aleph-garden/brand/lockups/lockup-horizontal-short-light.svg'
 import dark from '@aleph-garden/brand/lockups/lockup-horizontal-short-dark.svg'
 
-const { editUrl } = Astro.locals.starlightRoute
+const { editUrl, entry } = Astro.locals.starlightRoute
 const html = footer({
   lockup: { light: light.src, dark: dark.src },
-  source: editUrl ? { href: editUrl.href, text: 'Edit this page' } : undefined
+  source: editUrl ? { href: editUrl.href, text: 'Edit this page' } : undefined,
+  lastEdited: entry.filePath ? lastEdited(options.root, entry.filePath) : undefined
 })
 ---
 

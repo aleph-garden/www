@@ -1,6 +1,6 @@
 {
   "name": "@aleph-garden/starlight-theme",
-  "version": "0.1.0-dev",
+  "version": "0.1.1-dev",
   "description": "The Aleph Garden theme for Starlight: tokens, faces, the project switcher and the site footer",
   "license": "MIT",
   "repository": {
@@ -32,6 +32,7 @@
     "index.d.ts",
     "footer.js",
     "footer.d.ts",
+    "last-edited.js",
     "theme.js",
     "theme.d.ts",
     "virtual.d.ts",

@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url'
+
 /**
  * The Aleph Garden theme for Starlight. It brings the design tokens, the
  * self-hosted faces, the header's site title with the project switcher, and
@@ -31,8 +33,9 @@ export default function aleph({ project }) {
         addIntegration({
           name: '@aleph-garden/starlight-theme/options',
           hooks: {
-            'astro:config:setup'({ updateConfig: updateAstroConfig }) {
-              updateAstroConfig({ vite: { plugins: [optionsModule({ project })] } })
+            'astro:config:setup'({ config: astroConfig, updateConfig: updateAstroConfig }) {
+              const root = fileURLToPath(astroConfig.root)
+              updateAstroConfig({ vite: { plugins: [optionsModule({ project, root })] } })
             }
           }
         })
