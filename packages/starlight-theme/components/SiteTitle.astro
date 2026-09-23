@@ -4,7 +4,8 @@
 // title and a switcher over every project on the domain. The list is fetched
 // from /projects.json when the switcher first opens, so a project added to
 // www shows up here without this site being rebuilt. Without JavaScript the
-// switcher holds one link, to the landing page, which lists them all.
+// switcher still opens, holding one link, to the landing page, which lists
+// them all.
 import options from 'virtual:aleph-garden/starlight-theme'
 import light from '@aleph-garden/brand/lockups/lockup-horizontal-short-light.svg'
 import dark from '@aleph-garden/brand/lockups/lockup-horizontal-short-dark.svg'
@@ -19,15 +20,19 @@ const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute
   </a>
   <span class="ag-sep" aria-hidden="true">/</span>
   <a class="ag-project" href={siteTitleHref} translate="no">{siteTitle}</a>
-  <details class="ag-switch" data-project={options.project}>
-    <summary aria-label="Other projects">&#9662;</summary>
-    <div class="ag-menu">
-      <a class="ag-entry" href="https://aleph.garden/">
-        <span class="ag-entry-name">All projects</span>
-        <span class="ag-entry-line">The list on aleph.garden</span>
-      </a>
-    </div>
-  </details>
+  <button
+    class="ag-switch"
+    type="button"
+    popovertarget="ag-projects"
+    aria-label="Other projects"
+    data-project={options.project}>&#9662;</button
+  >
+  <div class="ag-menu" id="ag-projects" popover>
+    <a class="ag-entry" href="https://aleph.garden/">
+      <span class="ag-entry-name">All projects</span>
+      <span class="ag-entry-line">The list on aleph.garden</span>
+    </a>
+  </div>
 </div>
 
 <script>
@@ -45,28 +50,33 @@ const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute
       </a>`
   }
 
-  for (const details of document.querySelectorAll<HTMLDetailsElement>('.ag-switch')) {
+  // Browsers without CSS anchor positioning place the menu from the button's
+  // box when it opens.
+  const anchored = CSS.supports('anchor-name', '--ag-switch')
+
+  for (const button of document.querySelectorAll<HTMLButtonElement>('.ag-switch')) {
+    const menu = button.popoverTargetElement as HTMLElement | null
+    if (!menu) continue
     let loaded = false
-    details.addEventListener('toggle', async () => {
-      if (!details.open || loaded) return
+    menu.addEventListener('toggle', async (event) => {
+      if ((event as ToggleEvent).newState !== 'open') return
+      if (!anchored) {
+        const box = button.getBoundingClientRect()
+        menu.style.top = `${box.bottom + 12}px`
+        menu.style.left = `${Math.max(8, box.left - 48)}px`
+      }
+      if (loaded) return
       loaded = true
-      const menu = details.querySelector('.ag-menu')!
       try {
         const response = await fetch('/projects.json')
         if (!response.ok) return
         const projects: Project[] = await response.json()
-        menu.innerHTML = projects.map((p) => entry(p, details.dataset.project ?? '')).join('')
+        menu.innerHTML = projects.map((p) => entry(p, button.dataset.project ?? '')).join('')
       } catch {
         // The fallback link to the landing page stays in place.
       }
     })
   }
-
-  document.addEventListener('click', (event) => {
-    for (const details of document.querySelectorAll<HTMLDetailsElement>('.ag-switch[open]')) {
-      if (!details.contains(event.target as Node)) details.open = false
-    }
-  })
 </script>
 
 <style>
@@ -100,31 +110,39 @@ const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute
     white-space: nowrap;
   }
   .ag-switch {
-    position: relative;
-  }
-  .ag-switch summary {
-    list-style: none;
+    anchor-name: --ag-switch;
+    border: 0;
+    background: none;
     cursor: pointer;
     padding: 0 var(--ag-space-1);
     font-size: var(--ag-type-xs);
     color: var(--ag-text-muted);
   }
-  .ag-switch summary::-webkit-details-marker {
-    display: none;
-  }
+  /* A popover sits in the top layer, so the header's `overflow: clip` around
+     the title does not cut it off. It opens below the button: by anchor where
+     the browser has it, otherwise from the button's box. */
   .ag-menu {
-    position: absolute;
-    top: calc(100% + var(--ag-space-3));
-    left: calc(-1 * var(--ag-space-8));
+    position: fixed;
+    inset: auto;
+    margin: 0;
     width: 17.5rem;
     padding: var(--ag-space-2);
-    display: flex;
     flex-direction: column;
     background: var(--ag-raised);
+    color: var(--ag-text);
     border: var(--ag-stroke-hair) solid var(--ag-border);
     border-radius: var(--ag-radius-2);
     box-shadow: 0 4px 16px rgb(19 32 37 / 0.12);
-    z-index: var(--sl-z-index-menu);
+  }
+  .ag-menu:popover-open {
+    display: flex;
+  }
+  @supports (anchor-name: --ag-switch) {
+    .ag-menu {
+      position-anchor: --ag-switch;
+      top: calc(anchor(bottom) + var(--ag-space-3));
+      left: max(var(--ag-space-2), calc(anchor(left) - var(--ag-space-8)));
+    }
   }
   .ag-menu :global(.ag-entry) {
     display: flex;
