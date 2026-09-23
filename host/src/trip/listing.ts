@@ -84,9 +84,48 @@ export const fileFrame = frameView(FILE_FRAME, {
   'bottom-end': count
 })
 
+/** The id of the listing's body, which the fold button controls. */
+const BODY_ID = 'trip-body'
+
+/** Set when the fold button was pressed, so the button drawn after the
+ *  re-render takes the focus back. */
+let refocus = false
+
+/** The folder's own corner: the name of the view inside, then a button that
+ *  folds the folder to one line. Whether it is folded is the folder frame's
+ *  state, so a row switch, which draws the frame again, keeps it. Folding
+ *  hides the files rather than dropping them, so what a reader ticked or
+ *  switched in them is still there when the folder opens. Without
+ *  hydration the button stays hidden and the folder open. */
+const folderCorner: FieldOf = async (resource, view, ctx, show) => {
+  const folded = ctx.state('folded', false)
+  const open = !folded.get()
+  const label = String(await viewName(resource, view, ctx, show))
+  return {
+    html: `<span>${label}</span><button type="button" class="trip-fold" aria-controls="${BODY_ID}" aria-expanded="${open}" aria-label="${open ? 'Collapse folder' : 'Expand folder'}" hidden><span aria-hidden="true">${open ? '▴' : '▾'}</span></button>`,
+    hydrate(corner) {
+      const button = corner.querySelector<HTMLButtonElement>('.trip-fold')
+      const body = corner.closest('.aleph-frame')?.querySelector(`#${BODY_ID}`)
+      if (!button || !body) return
+      button.hidden = false
+      body.toggleAttribute('data-folded', !open)
+      if (refocus) {
+        refocus = false
+        button.focus()
+      }
+      const click = () => {
+        refocus = true
+        folded.set(open)
+      }
+      button.addEventListener('click', click)
+      return { dispose: () => button.removeEventListener('click', click) }
+    }
+  }
+}
+
 export const folderFrame = frameView(FOLDER_FRAME, {
   'top-start': address,
-  'top-end': viewName
+  'top-end': folderCorner
 })
 
 const shortName = (id: string) => id.split(/[#/]/).filter(Boolean).pop() ?? id
@@ -121,6 +160,12 @@ function caption(files: { iri: string; kind?: Kind }[]): string {
   return `The rules picked ${list}.`
 }
 
+/** The one line a folded folder shows: how many files, and their names. */
+function summary(files: string[]): string {
+  const names = files.map((iri) => escapeHtml(iri.split('/').pop() ?? iri))
+  return `${files.length} ${files.length === 1 ? 'file' : 'files'}: ${names.join(', ')}`
+}
+
 /** The folder's files, each framed, in the design's order. */
 export function listingView(folder: string): View {
   return {
@@ -144,7 +189,7 @@ export function listingView(folder: string): View {
       const table = ORDER.map(ruleRow).join('')
       const version = ctx.state('table', 0)
       return {
-        html: `<div class="trip"><div class="trip-files">${cells.join('')}</div><div class="trip-rules"><p class="trip-rules-head"><span>Rules</span><span>These apply inside this folder. A row with ⇄ is a switch: when I click it, every file it matches redraws.</span></p><ul>${table}</ul></div><p class="trip-caption">${caption(files.map((iri) => ({ iri, kind: kindOf(iri) })))}</p></div>`,
+        html: `<div class="trip" id="${BODY_ID}"><p class="trip-summary">${summary(files)}</p><div class="trip-files">${cells.join('')}</div><div class="trip-rules"><p class="trip-rules-head"><span>Rules</span><span>These apply inside this folder. A row with ⇄ is a switch: when I click it, every file it matches redraws.</span></p><ul>${table}</ul></div><p class="trip-caption">${caption(files.map((iri) => ({ iri, kind: kindOf(iri) })))}</p></div>`,
         hydrate(root) {
           const click = (event: Event) => {
             const button = (event.target as Element | null)?.closest<HTMLElement>('.trip-rule')

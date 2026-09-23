@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { type Context, createRenderer, type Resource, type View } from '@aleph-garden/vitrine'
 import { turtleParser } from '@aleph-garden/vitrine-turtle'
-import { FILE_FRAME, LISTING_VIEW, tripFolder, tripViews } from '../src/trip/index.ts'
+import { FILE_FRAME, FOLDER_FRAME, LISTING_VIEW, tripFolder, tripViews } from '../src/trip/index.ts'
 import { flip, isFlipped, onFlip } from '../src/trip/rules.ts'
 import { budgetOf, lineOf, project, tasksOf } from '../src/trip/views.ts'
 
@@ -148,5 +148,44 @@ describe('the listing', () => {
     expect(drawn.html).toContain(`data-view="${FILE_FRAME}"`)
     expect(drawn.html).toContain('class="trip-rule" data-kind="csv"')
     expect(drawn.html).toContain('The rules picked <code>checklist</code> for packing.txt')
+  })
+})
+
+describe('folding the folder', () => {
+  const folder = views.find((v) => v.id === FOLDER_FRAME)!
+  const listing = views.find((v) => v.id === LISTING_VIEW)!
+
+  /** A context whose inner view is the listing and whose `folded` state
+   *  reads `folded`. */
+  function framing(folded: boolean): Context {
+    const base = context()
+    return {
+      ...base,
+      inner: async () => ({ html: '<div class="trip" id="trip-body"></div>', view: listing }),
+      state: ((key: string, initial?: unknown) => ({
+        get: () => (key === 'folded' ? folded : initial),
+        set() {}
+      })) as Context['state']
+    }
+  }
+
+  test('puts a hidden fold button beside the view name, open by default', async () => {
+    const drawn = await folder.render(LISTING, framing(false))
+    expect(drawn.html).toContain('trip-listing')
+    expect(drawn.html).toContain('aria-controls="trip-body" aria-expanded="true"')
+    expect(drawn.html).toContain('aria-label="Collapse folder" hidden')
+  })
+
+  test('offers to expand once folded', async () => {
+    const drawn = await folder.render(LISTING, framing(true))
+    expect(drawn.html).toContain('aria-expanded="false" aria-label="Expand folder"')
+  })
+
+  test('the listing carries the one-line summary a folded folder shows', async () => {
+    const parsed = await renderer.parse(LISTING)
+    const drawn = await renderer.render(parsed, context())
+    expect(drawn.html).toContain(
+      '<p class="trip-summary">3 files: packing.txt, budget.csv, people.ttl</p>'
+    )
   })
 })
