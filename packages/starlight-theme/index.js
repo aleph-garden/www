@@ -7,12 +7,14 @@ import { fileURLToPath } from 'node:url'
  *
  * `project` is the path segment the project's documentation lives under on
  * aleph.garden (`vitrine` for `/vitrine/docs/`). The switcher uses it to mark
- * the current entry in the list it fetches from `/projects.json`.
+ * the current entry in the list it fetches from `/projects.json`. With
+ * `prerelease` set, every page carries a notice that nothing before 1.0 is
+ * stable.
  *
- * @param {{ project: string }} options
+ * @param {{ project: string, prerelease?: boolean }} options
  * @returns {import('@astrojs/starlight/types').StarlightPlugin}
  */
-export default function aleph({ project }) {
+export default function aleph({ project, prerelease = false }) {
   return {
     name: '@aleph-garden/starlight-theme',
     hooks: {
@@ -25,6 +27,7 @@ export default function aleph({ project }) {
           ],
           components: {
             ...config.components,
+            Banner: '@aleph-garden/starlight-theme/components/Banner.astro',
             SiteTitle: '@aleph-garden/starlight-theme/components/SiteTitle.astro',
             Footer: '@aleph-garden/starlight-theme/components/Footer.astro',
             PageFrame: '@aleph-garden/starlight-theme/components/PageFrame.astro'
@@ -35,7 +38,7 @@ export default function aleph({ project }) {
           hooks: {
             'astro:config:setup'({ config: astroConfig, updateConfig: updateAstroConfig }) {
               const root = fileURLToPath(astroConfig.root)
-              updateAstroConfig({ vite: { plugins: [optionsModule({ project, root })] } })
+              updateAstroConfig({ vite: { plugins: [optionsModule({ project, prerelease, root })] } })
             }
           }
         })

@@ -1,0 +1,40 @@
+---
+/// <reference path="../virtual.d.ts" />
+// Above the content of every page: the prerelease notice when the plugin was
+// given `prerelease: true`, then whatever banner the page's own frontmatter
+// sets, drawn by Starlight's component as before.
+import Default from '@astrojs/starlight/components/Banner.astro'
+import options from 'virtual:aleph-garden/starlight-theme'
+---
+
+{
+  options.prerelease && (
+    <p class="ag-prerelease" data-pagefind-ignore>
+      Before 1.0. Any interface here can change in any release, including the ones marked{' '}
+      <code>-dev</code> patches. Build against it to experiment, depend on an exact version, and
+      expect to follow breaking changes by hand.
+    </p>
+  )
+}
+<Default />
+
+<style>
+  .ag-prerelease {
+    margin: 0;
+    padding: var(--ag-space-2) var(--sl-nav-pad-x);
+    background: var(--ag-warning-surface);
+    color: var(--ag-warning);
+    border-bottom: var(--ag-stroke-hair) solid var(--ag-border);
+    font-size: var(--ag-type-ui);
+    line-height: var(--ag-leading-ui);
+    text-align: center;
+    text-wrap: balance;
+  }
+  .ag-prerelease code {
+    font-family: var(--ag-font-mono);
+    font-size: 0.9em;
+    color: inherit;
+    background: none;
+    padding: 0;
+  }
+</style>
