@@ -1,0 +1,53 @@
+# Publishes @aleph-garden/starlight-theme. Its first version goes to npm by
+# hand, because npm's OIDC exchange authenticates against a package that
+# already exists; the trusted publisher then names this workflow and the `npm`
+# environment. The job runs only while the repository variable
+# NPM_TRUSTED_PUBLISHING is `enabled`.
+
+name: Publish the Starlight theme
+
+on:
+  push:
+    tags: ['starlight-theme-v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-starlight-theme
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: vars.NPM_TRUSTED_PUBLISHING == 'enabled'
+    runs-on: ubuntu-latest
+    # The environment restricts deployments to starlight-theme-v* tags and
+    # requires a reviewer.
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+      # No frozen lockfile: the platform binding rolldown needs on the runner
+      # is an optional dependency bun resolves at install time.
+      - run: bun install
+      - run: bun run check
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      # The runner ships an npm older than the OIDC exchange.
+      - run: npm install -g npm@^11.5.1
+
+      - name: Check the tag against the manifest
+        run: |
+          expected="${GITHUB_REF_NAME#starlight-theme-v}"
+          found=$(node -p "require('./packages/starlight-theme/package.json').version")
+          [ "$found" = "$expected" ] || { echo "package.json is $found, tag says $expected" >&2; exit 1; }
+
+      - run: npm publish packages/starlight-theme --provenance
