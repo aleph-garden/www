@@ -15,8 +15,7 @@ const turtle = (graph: Quad[]): Resource => ({
   iri: DOC,
   contentType: 'text/turtle',
   body: '',
-  graph,
-  meta: [],
+  quads: graph.map((q) => ({ ...q, graph: iri(DOC) })),
   allow: ['read']
 })
 

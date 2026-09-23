@@ -12,7 +12,7 @@ const file = (name: string, contentType: string, body: string): Resource => ({
   iri: `${FOLDER}${name}`,
   contentType,
   body,
-  meta: [],
+  quads: [],
   allow: ['read']
 })
 
@@ -32,7 +32,7 @@ const LISTING: Resource = {
   iri: FOLDER,
   contentType: 'text/turtle',
   body: '@prefix ldp: <http://www.w3.org/ns/ldp#> .\n<> a ldp:Container ; ldp:contains <packing.txt>, <people.ttl>, <budget.csv> .\n',
-  meta: [],
+  quads: [],
   allow: ['read']
 }
 
@@ -45,7 +45,10 @@ function context(): Context {
     events: (async function* () {})(),
     transclude: async (iri, show) =>
       `<div data-aleph-transclude="${iri}" data-view="${show?.view ?? ''}"></div>`,
-    inner: () => Promise.reject(new Error('no inner view')),
+    about: () => {
+      throw new Error('no about')
+    },
+    render: () => Promise.reject(new Error('no render')),
     state: ((_key: string, initial?: unknown) => ({
       get: () => initial,
       set() {}
@@ -155,13 +158,13 @@ describe('folding the folder', () => {
   const folder = views.find((v) => v.id === FOLDER_FRAME)!
   const listing = views.find((v) => v.id === LISTING_VIEW)!
 
-  /** A context whose inner view is the listing and whose `folded` state
+  /** A context whose render draws the listing and whose `folded` state
    *  reads `folded`. */
   function framing(folded: boolean): Context {
     const base = context()
     return {
       ...base,
-      inner: async () => ({ html: '<div class="trip" id="trip-body"></div>', view: listing }),
+      render: async () => ({ html: '<div class="trip" id="trip-body"></div>', view: listing }),
       state: ((key: string, initial?: unknown) => ({
         get: () => (key === 'folded' ? folded : initial),
         set() {}

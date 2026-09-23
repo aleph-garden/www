@@ -6,12 +6,12 @@
       "name": "aleph-garden-www",
       "dependencies": {
         "@aleph-garden/brand": "0.1.1-dev",
-        "@aleph-garden/host-core": "0.2.0-dev",
+        "@aleph-garden/host-core": "0.3.0-dev",
         "@aleph-garden/starlight-theme": "workspace:*",
-        "@aleph-garden/terms": "0.2.0-dev",
-        "@aleph-garden/vitrine": "0.2.0-dev",
-        "@aleph-garden/vitrine-jsonld": "0.2.0-dev",
-        "@aleph-garden/vitrine-turtle": "0.2.0-dev",
+        "@aleph-garden/terms": "0.3.0-dev",
+        "@aleph-garden/vitrine": "0.3.0-dev",
+        "@aleph-garden/vitrine-jsonld": "0.3.0-dev",
+        "@aleph-garden/vitrine-turtle": "0.3.0-dev",
         "@astrojs/starlight": "^0.42.1",
         "astro": "^7.3.3",
         "astro-mermaid": "^2.1.0",
@@ -41,17 +41,17 @@
   "packages": {
     "@aleph-garden/brand": ["@aleph-garden/brand@0.1.1-dev", "", {}, "sha512-MNYVpkCkcjIkJgnsg7TDA/PAHuloo+yD7qXL50utGc17Prw+veg6rPfv0bZfS+fqeFDk0JhqKTXA1iMsvRQyBg=="],
 
-    "@aleph-garden/host-core": ["@aleph-garden/host-core@0.2.0-dev", "", { "dependencies": { "@aleph-garden/brand": "0.1.1-dev", "@aleph-garden/terms": "0.2.0-dev", "@aleph-garden/vitrine": "0.2.0-dev", "@inrupt/solid-client-authn-browser": "^5.0.0" }, "peerDependencies": { "vite": "^8.0.0" }, "optionalPeers": ["vite"] }, "sha512-1Ux6PwUz2SdBYYQL2xInZnxCTbu4bQxA6MRtmKCB/hqXfZBm/7J5tqHAQtlAt4oAgK2tXTiG1FZta9svMot1dQ=="],
+    "@aleph-garden/host-core": ["@aleph-garden/host-core@0.3.0-dev", "", { "dependencies": { "@aleph-garden/brand": "0.1.1-dev", "@aleph-garden/terms": "0.3.0-dev", "@aleph-garden/vitrine": "0.3.0-dev", "@inrupt/solid-client-authn-browser": "^5.0.0" }, "peerDependencies": { "vite": "^8.0.0" }, "optionalPeers": ["vite"] }, "sha512-JGEet2gnlpcLfIgE4JVSb7HxJ2UDOxJw/LHZA6QyFag33iP1i3hMrGDWPZpFyGSlqiqJGP3bvAc+kKJztpAIMw=="],
 
     "@aleph-garden/starlight-theme": ["@aleph-garden/starlight-theme@workspace:packages/starlight-theme"],
 
-    "@aleph-garden/terms": ["@aleph-garden/terms@0.2.0-dev", "", {}, "sha512-M4XqHdHapqgluk2YmELOOgtrJvrLAdRoy2j8tAkLAFdLF+KRsViT/RS0bGepLrOjyRyUc8uMk2RbEpvfvYsbsQ=="],
+    "@aleph-garden/terms": ["@aleph-garden/terms@0.3.0-dev", "", {}, "sha512-tPpLLjAYc1MG7a0ch3vy8eQBq317LTulQrOWV1e1JV6hoiTipEn7JvUc3n1/rJoiGSnch7SEcp2u/fw++5Ptlw=="],
 
-    "@aleph-garden/vitrine": ["@aleph-garden/vitrine@0.2.0-dev", "", { "dependencies": { "@aleph-garden/terms": "0.2.0-dev", "dompurify": "^3.4.15" } }, "sha512-8TJv3qBNTw4G6lUSECTbVBQ1pJOQRX9hCU8ebtauxZXlfH3AyaOBPA9FJR4go2tmOMrrazK1C9RchDKrcZqzuw=="],
+    "@aleph-garden/vitrine": ["@aleph-garden/vitrine@0.3.0-dev", "", { "dependencies": { "@aleph-garden/terms": "0.3.0-dev", "dompurify": "^3.4.15" } }, "sha512-Y1afOhmFf2Ca4Yh2yr7kcO9wcb/h7yI9UKL35c4/TnqSKlnJq9d5mula7YEawRCVuNC7IZ69sXaPeW6o+tdotQ=="],
 
-    "@aleph-garden/vitrine-jsonld": ["@aleph-garden/vitrine-jsonld@0.2.0-dev", "", { "dependencies": { "@aleph-garden/vitrine": "0.2.0-dev", "jsonld-streaming-parser": "^5.0.1" } }, "sha512-E8GJRiE90djvMX72LvlIpwt33fNUtCebZUyJk4Zd2mjWHQZhq+GahfYctx4vBZXJyBEI7FThVOo1ViDlFBcTYw=="],
+    "@aleph-garden/vitrine-jsonld": ["@aleph-garden/vitrine-jsonld@0.3.0-dev", "", { "dependencies": { "@aleph-garden/vitrine": "0.3.0-dev", "jsonld-streaming-parser": "^5.0.1" } }, "sha512-M2zL7F3Sf+WaS0yRoaH4iDTvZfvzRotbcAuoWw9chcp5VoiLBnrErl1NasnGcm61yRwoFI5+1J++dbQrX+vAEQ=="],
 
-    "@aleph-garden/vitrine-turtle": ["@aleph-garden/vitrine-turtle@0.2.0-dev", "", { "dependencies": { "@aleph-garden/vitrine": "0.2.0-dev", "n3": "^2.7.12" } }, "sha512-g5ZHYGZeJBHHsT+hnw8Uf5TEAv7Ccf5lGsrPXmkLeVmFbUau3y0fQBE62NtoHJkkk37xkoyDeFvSOuYt/I1dwA=="],
+    "@aleph-garden/vitrine-turtle": ["@aleph-garden/vitrine-turtle@0.3.0-dev", "", { "dependencies": { "@aleph-garden/vitrine": "0.3.0-dev", "n3": "^2.7.12" } }, "sha512-eJRbBTsD29Eytknos5bEFJuRQV18eZt5keid1ZTmU+UBSOjg1TU9nAW95yxEFzOcK4Ie9oI88sBXFUFCaDERnw=="],
 
     "@antfu/install-pkg": ["@antfu/install-pkg@2.1.0", "", { "dependencies": { "package-manager-detector": "^1.8.0", "tinyexec": "^1.3.1" } }, "sha512-sdg9NxU3zR4Mnawfbc/x6GB5Wf17WYud5qOuEuxXjaKpYpMkISSJEjItGebXJ2bQ4DIcly4NYH23mtkGJjvKUw=="],
 

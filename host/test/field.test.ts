@@ -12,7 +12,7 @@ const RING = Array.from(
 
 const IRI = 'https://e.org/doc'
 const renderer = createRenderer({ parsers: [turtleParser()], views: [ambientView] })
-const resolve = async (): Promise<Resource> => ({ iri: IRI, contentType: 'text/turtle', body: RING, meta: [], allow: ['read'] })
+const resolve = async (): Promise<Resource> => ({ iri: IRI, contentType: 'text/turtle', body: RING, quads: [], allow: ['read'] })
 
 describe('ambientView', () => {
   test('draws a document it is named for, the way the build renders it', async () => {
@@ -29,7 +29,7 @@ describe('ambientView', () => {
   })
 
   test('is never picked by the rules', () => {
-    expect(renderer.select({ iri: IRI, contentType: 'text/turtle', body: RING, meta: [], allow: [] })).toBeUndefined()
+    expect(renderer.select({ iri: IRI, contentType: 'text/turtle', body: RING, quads: [], allow: [] })).toBeUndefined()
   })
 })
 

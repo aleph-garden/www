@@ -31,7 +31,7 @@ export function ambient(): Plugin {
       const file = id.slice(0, -QUERY.length)
       const iri = pathToFileURL(file).href
       const body = await readFile(file, 'utf8')
-      const resolve = async (): Promise<Resource> => ({ iri, contentType: 'text/turtle', body, meta: [], allow: ['read'] })
+      const resolve = async (): Promise<Resource> => ({ iri, contentType: 'text/turtle', body, quads: [], allow: ['read'] })
       const html = await renderInline(renderer, resolve, iri, { view: AMBIENT_VIEW })
       // The file is watched, so editing the vocabulary redraws the field in dev.
       this.addWatchFile(file)

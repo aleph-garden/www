@@ -20,7 +20,10 @@ function recording(): { ctx: Context; asked: string[] } {
         asked.push(iri)
         return `<div data-aleph-transclude="${iri}"></div>`
       },
-      inner: () => Promise.reject(new Error('no inner view')),
+      about: () => {
+        throw new Error('no about')
+      },
+      render: () => Promise.reject(new Error('no render')),
       state: ((_key: string, initial?: unknown) => ({
         get: () => initial,
         set() {}
@@ -35,7 +38,7 @@ const resource = (iri: string): Resource => ({
   iri,
   contentType: 'text/html',
   body: '',
-  meta: [],
+  quads: [],
   allow: ['read']
 })
 

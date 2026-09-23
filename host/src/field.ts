@@ -1,5 +1,5 @@
 import type { Quad, View } from '@aleph-garden/vitrine'
-import { collect, BOX as LAYOUT, slotsFor } from './graph.ts'
+import { collect, contentOf, BOX as LAYOUT, slotsFor } from './graph.ts'
 
 // A still flow field behind the page's opening, drawn from a real document.
 //
@@ -213,6 +213,6 @@ export const AMBIENT_VIEW = 'https://aleph.garden/views/ambient'
 export const ambientView: View = {
   id: AMBIENT_VIEW,
   async render(resource) {
-    return { html: fieldHtml(resource.graph ?? []) }
+    return { html: fieldHtml(contentOf(resource)) }
   }
 }

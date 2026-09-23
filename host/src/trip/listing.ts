@@ -18,6 +18,7 @@ import {
   viewName,
   viewSwitch
 } from '@aleph-garden/vitrine/frame'
+import { contentOf } from '../graph.ts'
 import { flip, isFlipped, type Kind, onFlip, picked, rowFor, rowsOf } from './rules.ts'
 
 export const FOLDER_FRAME = 'https://aleph.garden/views/folder-frame'
@@ -71,7 +72,7 @@ const typeAndRedraw: FieldOf = async (resource, view, ctx, show) => {
 /** How many people the file describes, for the people row only. */
 const count: FieldOf = (resource) => {
   if (rowFor(resource)?.kind !== 'people') return undefined
-  const people = (resource.graph ?? []).filter(
+  const people = contentOf(resource).filter(
     (q) => q.predicate.value === rdf.type && q.object.value === schema.Person
   ).length
   return `${people} × schema:Person`
@@ -172,8 +173,7 @@ export function listingView(folder: string): View {
     id: LISTING_VIEW,
     when: [{ iri: folder }],
     async render(resource: Resource, ctx) {
-      const stated = [...resource.meta, ...(resource.graph ?? [])]
-      const members = about(stated, resource.iri).all(ldp.contains)
+      const members = about(resource).all(ldp.contains)
       const kindOf = (iri: string) => rowFor({ ...resource, iri, contentType: typeByName(iri) })?.kind
       const rank = (iri: string) => {
         const kind = kindOf(iri)

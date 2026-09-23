@@ -6,6 +6,7 @@
 
 import { about, escapeHtml, type Resource, type View } from '@aleph-garden/vitrine'
 import { rdf, schema } from '@aleph-garden/terms'
+import { contentOf } from '../graph.ts'
 
 const VIEWS = 'https://aleph.garden/views/'
 
@@ -207,7 +208,7 @@ export const noteView: View = {
 type Person = { iri: string; name: string; email?: string }
 
 export function peopleOf(resource: Resource): Person[] {
-  const graph = resource.graph ?? []
+  const graph = contentOf(resource)
   const subjects = [
     ...new Set(
       graph
@@ -250,7 +251,7 @@ const short = (iri: string) => (iri.startsWith(SCHEMA) ? `schema:${iri.slice(SCH
 export const statementsView: View = {
   id: `${VIEWS}statements`,
   async render(resource) {
-    const graph = resource.graph ?? []
+    const graph = contentOf(resource)
     const tables = peopleOf(resource)
       .map((p) => {
         const rows = graph

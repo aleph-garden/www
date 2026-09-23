@@ -1,5 +1,5 @@
 import { ns } from '@aleph-garden/terms'
-import { escapeHtml, type Quad, type View } from '@aleph-garden/vitrine'
+import { escapeHtml, type Quad, type Resource, type View } from '@aleph-garden/vitrine'
 
 // An RDF document as a node-link drawing rather than a table of rows, built to
 // section 4 of the design language.
@@ -140,7 +140,7 @@ export const graphView: View = {
   when: [{ contentType: 'text/turtle' }],
 
   async render(resource) {
-    const graph = resource.graph ?? []
+    const graph = contentOf(resource)
     if (graph.length === 0) {
       return { html: '<p class="graph-empty">This document carries no statements.</p>' }
     }
@@ -209,4 +209,11 @@ export const graphView: View = {
     </figure>`
     }
   }
+}
+
+/** What the resource's own body says: the quads in the graph named by its
+ *  IRI, where the renderer puts what a parser read. What is known about it
+ *  from outside, and any further document, sit in other graphs. */
+export function contentOf(resource: Resource): Quad[] {
+  return resource.quads.filter((q) => q.graph?.value === resource.iri)
 }
