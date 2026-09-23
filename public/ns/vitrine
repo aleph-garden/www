@@ -39,8 +39,9 @@
     a owl:Ontology ;
     rdfs:label   "Vitrine rendering vocabulary"@en ;
     rdfs:comment """Terms for the rendering contract: the class a view
-instantiates, the document that configures a host selecting one, and the event
-a view emits when it marks a resource."""@en ;
+instantiates, the document that configures a host selecting one, the event
+a view emits when it marks a resource, and the name of the graph that holds
+what is known about a resource from outside its content."""@en ;
     vann:preferredNamespacePrefix "vitrine" ;
     vann:preferredNamespaceUri    "https://w3id.org/vitrine/ns#" ;
     rdfs:seeAlso <https://github.com/aleph-garden/vitrine> ;
@@ -80,6 +81,21 @@ vitrine:Select a rdfs:Class ;
     rdfs:comment """A view marked a resource, for the other views on the same
 page to react to. ActivityStreams has no activity for it. The object is the
 resource marked, the actor the view instance that marked it."""@en ;
+    rdfs:isDefinedBy <https://w3id.org/vitrine/ns#> .
+
+#################################################################
+# Graph names
+#################################################################
+
+vitrine:Meta
+    rdfs:label   "Meta"@en ;
+    rdfs:comment """The name of the graph holding what is known about a
+resource from outside its content: the type a store gives it, when it changed,
+the members of a container, its media type. Whoever resolves the resource fills
+it, from HTTP headers or from whatever else its transport tells. What the
+resource's own body says sits in the graph named by the resource's IRI, and a
+further document brought in about it in a graph named by that document's
+IRI."""@en ;
     rdfs:isDefinedBy <https://w3id.org/vitrine/ns#> .
 
 #################################################################
