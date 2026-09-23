@@ -1,11 +1,11 @@
 ---
 /// <reference path="../virtual.d.ts" />
 // The short lockup, which leads home to aleph.garden, then the project's own
-// title and a switcher over every project on the domain. The list is fetched
-// from /projects.json when the switcher first opens, so a project added to
-// www shows up here without this site being rebuilt. Without JavaScript the
-// switcher still opens, holding one link, to the landing page, which lists
-// them all.
+// title as the button that opens a switcher over every project on the domain.
+// The list is fetched from /projects.json when the switcher first opens, so a
+// project added to www shows up here without this site being rebuilt. Without
+// JavaScript the switcher still opens, holding this project's home and the
+// landing page, which lists them all.
 import options from 'virtual:aleph-garden/starlight-theme'
 import light from '@aleph-garden/brand/lockups/lockup-horizontal-short-light.svg'
 import dark from '@aleph-garden/brand/lockups/lockup-horizontal-short-dark.svg'
@@ -19,15 +19,21 @@ const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute
     <img class="ag-on-dark" src={dark.src} width={dark.width} height={dark.height} alt="" />
   </a>
   <span class="ag-sep" aria-hidden="true">/</span>
-  <a class="ag-project" href={siteTitleHref} translate="no">{siteTitle}</a>
   <button
     class="ag-switch"
     type="button"
     popovertarget="ag-projects"
-    aria-label="Other projects"
-    data-project={options.project}>&#9662;</button
+    aria-haspopup="true"
+    data-project={options.project}
   >
+    <span class="ag-project" translate="no">{siteTitle}</span>
+    <span class="ag-caret" aria-hidden="true">&#9662;</span>
+  </button>
   <div class="ag-menu" id="ag-projects" popover>
+    <a class="ag-entry" aria-current="true" href={siteTitleHref}>
+      <span class="ag-entry-name" translate="no">{siteTitle}</span>
+      <span class="ag-entry-line">This project's documentation</span>
+    </a>
     <a class="ag-entry" href="https://aleph.garden/">
       <span class="ag-entry-name">All projects</span>
       <span class="ag-entry-line">The list on aleph.garden</span>
@@ -63,7 +69,7 @@ const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute
       if (!anchored) {
         const box = button.getBoundingClientRect()
         menu.style.top = `${box.bottom + 12}px`
-        menu.style.left = `${Math.max(8, box.left - 48)}px`
+        menu.style.left = `${Math.max(8, box.left)}px`
       }
       if (loaded) return
       loaded = true
@@ -111,12 +117,21 @@ const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute
   }
   .ag-switch {
     anchor-name: --ag-switch;
+    display: flex;
+    align-items: center;
+    gap: var(--ag-space-1);
+    min-width: 0;
     border: 0;
     background: none;
     cursor: pointer;
-    padding: 0 var(--ag-space-1);
+    padding: 0;
+  }
+  .ag-caret {
     font-size: var(--ag-type-xs);
     color: var(--ag-text-muted);
+  }
+  .ag-switch:hover .ag-caret {
+    color: var(--ag-text);
   }
   /* A popover sits in the top layer, so the header's `overflow: clip` around
      the title does not cut it off. It opens below the button: by anchor where
@@ -141,7 +156,7 @@ const { siteTitle, siteTitleHref } = Astro.locals.starlightRoute
     .ag-menu {
       position-anchor: --ag-switch;
       top: calc(anchor(bottom) + var(--ag-space-3));
-      left: max(var(--ag-space-2), calc(anchor(left) - var(--ag-space-8)));
+      left: max(var(--ag-space-2), anchor(left));
     }
   }
   .ag-menu :global(.ag-entry) {
