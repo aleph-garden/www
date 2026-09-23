@@ -3,12 +3,14 @@
 //
 // The page transcludes the folder with the folder frame named; the frame's
 // inner view is the listing, which the rules pick by the folder's address.
-// The listing transcludes each file with the file frame named, and what the
-// file frame draws inside is again the rules' choice, which the table below
-// switches. A file whose own corner was switched keeps its choice.
+// The listing embeds each file with the file frame named, and what the file
+// frame draws inside is again the rules' choice, which the table below
+// switches. A file whose own corner was switched keeps its choice. The one
+// graph among the files, people.ttl, is taken apart by vitrine's subjects
+// view, and each person in it gets a frame of its own, picked by its type.
 
 import { ldp, rdf, schema } from '@aleph-garden/terms'
-import { about, escapeHtml, type Resource, type View } from '@aleph-garden/vitrine'
+import { about, escapeHtml, type Rendered, type Resource, typesOf, type View } from '@aleph-garden/vitrine'
 import {
   contentType,
   type Field,
@@ -19,16 +21,27 @@ import {
   viewSwitch
 } from '@aleph-garden/vitrine/frame'
 import { contentOf } from '../graph.ts'
-import { flip, isFlipped, type Kind, onFlip, picked, rowFor, rowsOf } from './rules.ts'
+import { flip, IN_FOLDER, isFlipped, type Kind, onFlip, picked, rowFor, rowsOf } from './rules.ts'
 
 export const FOLDER_FRAME = 'https://aleph.garden/views/folder-frame'
 export const FILE_FRAME = 'https://aleph.garden/views/file-frame'
 export const LISTING_VIEW = 'https://aleph.garden/views/trip-listing'
+export const PERSON_FRAME = 'https://aleph.garden/views/person-frame'
+
+/** Whether the rendering is about one subject inside the resource rather
+ *  than the resource as a whole. */
+const onSubject = (resource: Resource) =>
+  resource.subject !== undefined && resource.subject !== resource.iri
 
 /** The name field with a dot in front of it, coloured by the kind of file,
  *  or in the border's ink for the folder itself. */
 const dotted: FieldOf = async (resource, view, ctx, show) => {
   const kind = rowFor(resource)?.kind ?? 'folder'
+  if (onSubject(resource)) {
+    const subject = resource.subject ?? resource.iri
+    const hash = new URL(subject).hash
+    return `<span class="trip-dot" data-kind="${kind}" aria-hidden="true"></span><span class="aleph-frame-name" title="${escapeHtml(subject)}">${escapeHtml(hash)}</span>`
+  }
   const label = await name(resource, view, ctx, show)
   const html = typeof label === 'string' ? label : (label?.html ?? '')
   return `<span class="trip-dot" data-kind="${kind}" aria-hidden="true"></span>${html}`
@@ -49,14 +62,17 @@ const switcher: FieldOf = (resource, view, ctx, show) => {
   ])(resource, view, ctx, show)
 }
 
-/** The content type, and the one hook the frame needs on the table: when the
- *  row for this file switches, the frame draws again, so the rules pick for
- *  it anew. Frames of other rows keep what they show. The counter is only
- *  there to change. */
+/** What the rules picked by: the content type for a file, the rdf:type for a
+ *  subject inside one. It is also the one hook the frame needs on the table:
+ *  when the row for this frame switches, the frame draws again, so the rules
+ *  pick for it anew. Frames of other rows keep what they show. The counter is
+ *  only there to change. */
 const typeAndRedraw: FieldOf = async (resource, view, ctx, show) => {
   const redraw = ctx.state('table', 0)
   const mine = rowFor(resource)?.kind
-  const html = String(await contentType(resource, view, ctx, show))
+  const html = onSubject(resource)
+    ? typesOf(resource).map((type) => escapeHtml(prefixed(type))).join(', ')
+    : String(await contentType(resource, view, ctx, show))
   const field: Field = {
     html,
     hydrate: () => {
@@ -69,21 +85,36 @@ const typeAndRedraw: FieldOf = async (resource, view, ctx, show) => {
   return field
 }
 
-/** How many people the file describes, for the people row only. */
+/** How many people a graph describes, on the file's frame only. */
 const count: FieldOf = (resource) => {
-  if (rowFor(resource)?.kind !== 'people') return undefined
+  if (onSubject(resource) || rowFor(resource)?.kind !== 'graph') return undefined
   const people = contentOf(resource).filter(
     (q) => q.predicate.value === rdf.type && q.object.value === schema.Person
   ).length
-  return `${people} × schema:Person`
+  return people ? `${people} × schema:Person` : undefined
 }
 
-export const fileFrame = frameView(FILE_FRAME, {
+const SCHEMA = 'https://schema.org/'
+const prefixed = (iri: string) => (iri.startsWith(SCHEMA) ? `schema:${iri.slice(SCHEMA.length)}` : iri)
+
+const corners = {
   'top-start': dotted,
   'top-end': switcher,
   'bottom-start': typeAndRedraw,
   'bottom-end': count
-})
+}
+
+export const fileFrame = frameView(FILE_FRAME, corners)
+
+/** The same frame around a person inside a file. The file's subjects view
+ *  embeds each person without naming a view, so this frame is picked by the
+ *  same conditions as the person row, and draws what the row picks inside:
+ *  it is registered first, and the renderer passes it over when the frame
+ *  asks for the view below. */
+export const personFrame: View = {
+  ...frameView(PERSON_FRAME, corners),
+  when: [{ type: schema.Person }, IN_FOLDER]
+}
 
 /** The id of the listing's body, which the fold button controls. */
 const BODY_ID = 'trip-body'
@@ -131,8 +162,12 @@ export const folderFrame = frameView(FOLDER_FRAME, {
 
 const shortName = (id: string) => id.split(/[#/]/).filter(Boolean).pop() ?? id
 
-/** The order the design lays the files out in, people last and full width. */
-const ORDER: Kind[] = ['txt', 'csv', 'geo', 'md', 'people']
+/** The order the design lays the files out in, the graph last and full width. */
+const FILES: Kind[] = ['txt', 'csv', 'geo', 'md', 'graph']
+
+/** The order of the rule table: the files' rows, then the row that picks
+ *  for the people inside the graph. */
+const TABLE: Kind[] = [...FILES, 'person']
 
 function ruleRow(kind: Kind): string {
   const row = rowsOf().find((r) => r.kind === kind)
@@ -147,15 +182,23 @@ function ruleRow(kind: Kind): string {
   return `<li><button type="button" class="trip-rule" data-kind="${kind}"${second ? '' : ' disabled'} aria-pressed="${flipped}"><span class="trip-cond">${escapeHtml(row.label)}</span><span class="trip-views"><span aria-hidden="true">→</span><span class="trip-view"${on(first)}>${escapeHtml(shortName(first.id))}</span>${alt}</span><span class="trip-state">${state}</span></button></li>`
 }
 
-/** One sentence naming the view the rules picked for each file. A file
- *  switched in its own corner is drawn by its own choice, which this does
- *  not know: the listing sees its files, never what they became. */
+const pickedFor = (kind: Kind) => {
+  const row = rowsOf().find((r) => r.kind === kind)
+  return row ? `<code>${escapeHtml(shortName(picked(row).id))}</code>` : undefined
+}
+
+/** One sentence naming the view the rules picked for each file, and for each
+ *  person inside the graph. A file switched in its own corner is drawn by its
+ *  own choice, which this does not know: the listing sees its files, never
+ *  what they became. */
 function caption(files: { iri: string; kind?: Kind }[]): string {
   const parts = files.flatMap(({ iri, kind }) => {
-    const row = rowsOf().find((r) => r.kind === kind)
+    const view = kind && pickedFor(kind)
     const file = iri.split('/').pop() ?? iri
-    return row ? [`<code>${escapeHtml(shortName(picked(row).id))}</code> for ${escapeHtml(file)}`] : []
+    return view ? [`${view} for ${escapeHtml(file)}`] : []
   })
+  const person = files.some((f) => f.kind === 'graph') && pickedFor('person')
+  if (person) parts.push(`${person} for each schema:Person in it`)
   if (!parts.length) return ''
   const list = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}` : parts[0]
   return `The rules picked ${list}.`
@@ -174,23 +217,37 @@ export function listingView(folder: string): View {
     when: [{ iri: folder }],
     async render(resource: Resource, ctx) {
       const members = about(resource).all(ldp.contains)
-      const kindOf = (iri: string) => rowFor({ ...resource, iri, contentType: typeByName(iri) })?.kind
       const rank = (iri: string) => {
-        const kind = kindOf(iri)
-        return kind ? ORDER.indexOf(kind) : ORDER.length
+        const kind = kindByName(iri)
+        return kind ? FILES.indexOf(kind) : FILES.length
       }
       const files = [...members].sort((a, b) => rank(a) - rank(b))
+      // The graph is drawn here rather than transcluded, so the people inside
+      // it are embedded from this instance. The runtime mounts three levels
+      // below the page on its own, the page, this folder and a file, and
+      // host-core offers a host no way to set that depth; a person inside a
+      // transcluded file would be a fourth and stay a placeholder. Once
+      // host-core takes a runtime depth, this becomes a transclusion like
+      // every other file.
+      const inline: Rendered[] = []
       const cells = await Promise.all(
         files.map(async (iri) => {
-          const wide = /\.ttl$/.test(iri) ? ' data-wide' : ''
-          return `<div class="trip-cell"${wide}>${await ctx.transclude(iri, { view: FILE_FRAME })}</div>`
+          if (kindByName(iri) !== 'graph')
+            return `<div class="trip-cell">${await ctx.transclude(iri, { view: FILE_FRAME })}</div>`
+          const drawn = await ctx.render(await ctx.resolve(iri), { view: FILE_FRAME })
+          inline.push(drawn)
+          return `<div class="trip-cell" data-wide><div class="trip-inline" data-inline="${inline.length - 1}">${drawn.html}</div></div>`
         })
       )
-      const table = ORDER.map(ruleRow).join('')
+      const table = TABLE.map(ruleRow).join('')
       const version = ctx.state('table', 0)
       return {
-        html: `<div class="trip" id="${BODY_ID}"><p class="trip-summary">${summary(files)}</p><div class="trip-files">${cells.join('')}</div><div class="trip-rules"><p class="trip-rules-head"><span>Rules</span><span>These apply inside this folder. A row with ⇄ is a switch: when I click it, every file it matches redraws.</span></p><ul>${table}</ul></div><p class="trip-caption">${caption(files.map((iri) => ({ iri, kind: kindOf(iri) })))}</p></div>`,
-        hydrate(root) {
+        html: `<div class="trip" id="${BODY_ID}"><p class="trip-summary">${summary(files)}</p><div class="trip-files">${cells.join('')}</div><div class="trip-rules"><p class="trip-rules-head"><span>Rules</span><span>These apply inside this folder. A row with ⇄ is a switch: when I click it, everything it matches redraws.</span></p><ul>${table}</ul></div><p class="trip-caption">${caption(files.map((iri) => ({ iri, kind: kindByName(iri) })))}</p></div>`,
+        hydrate(root, hydrating) {
+          const handles = inline.map((drawn, i) => {
+            const at = root.querySelector(`.trip-inline[data-inline="${i}"]`)
+            return at ? drawn.hydrate?.(at, hydrating) : undefined
+          })
           const click = (event: Event) => {
             const button = (event.target as Element | null)?.closest<HTMLElement>('.trip-rule')
             const kind = button?.dataset.kind as Kind | undefined
@@ -200,20 +257,25 @@ export function listingView(folder: string): View {
           }
           const rules = root.querySelector('.trip-rules')
           rules?.addEventListener('click', click)
-          return { dispose: () => rules?.removeEventListener('click', click) }
+          return {
+            dispose: () => {
+              rules?.removeEventListener('click', click)
+              for (const handle of handles) handle?.dispose?.()
+            }
+          }
         }
       }
     }
   }
 }
 
-/** A content type from a file name, for ordering members before they are
- *  fetched. */
-function typeByName(iri: string): string {
-  if (iri.endsWith('.txt')) return 'text/plain'
-  if (iri.endsWith('.csv')) return 'text/csv'
-  if (iri.endsWith('.geojson')) return 'application/geo+json'
-  if (iri.endsWith('.md')) return 'text/markdown'
-  if (iri.endsWith('.ttl')) return 'text/turtle'
-  return 'application/octet-stream'
+/** The row a member will fall under, from its name, for ordering the files
+ *  and naming their views before any of them is fetched. */
+function kindByName(iri: string): Kind | undefined {
+  if (iri.endsWith('.txt')) return 'txt'
+  if (iri.endsWith('.csv')) return 'csv'
+  if (iri.endsWith('.geojson')) return 'geo'
+  if (iri.endsWith('.md')) return 'md'
+  if (iri.endsWith('.ttl')) return 'graph'
+  return undefined
 }

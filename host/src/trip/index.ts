@@ -1,13 +1,16 @@
 // Everything the hero's folder registers, in the order the host lists it:
-// the listing before the rows, and the rows before the host's general views,
-// which would otherwise take a Turtle or a text file first.
+// the listing and the frames first, then the rows before the host's general
+// views, which would otherwise take a Turtle or a text file first. The person
+// row sits before the graph row: a person inside people.ttl is read from a
+// graph too, and its type is the more specific thing to say about it.
 
-import type { View } from '@aleph-garden/vitrine'
-import { fileFrame, folderFrame, listingView } from './listing.ts'
-import { defineRows, inFolder } from './rules.ts'
+import { schema } from '@aleph-garden/terms'
+import { subjectsGridView, subjectsListView, type View } from '@aleph-garden/vitrine'
+import { fileFrame, folderFrame, listingView, personFrame } from './listing.ts'
+import { defineRows, IN_FOLDER, inFolder } from './rules.ts'
 import {
   barsView,
-  cardsView,
+  cardView,
   checklistView,
   coordinatesView,
   mapView,
@@ -21,7 +24,7 @@ import {
  *  draws its own copy. */
 export const tripFolder = (origin: string) => `${origin}/fixtures/trip/`
 
-export { FILE_FRAME, FOLDER_FRAME, LISTING_VIEW } from './listing.ts'
+export { FILE_FRAME, FOLDER_FRAME, LISTING_VIEW, PERSON_FRAME } from './listing.ts'
 
 export function tripViews(origin: string): View[] {
   const rows = defineRows([
@@ -50,11 +53,17 @@ export function tripViews(origin: string): View[] {
       views: [noteView]
     },
     {
-      kind: 'people',
-      label: 'text/turtle',
-      when: inFolder({ contentType: 'text/turtle' }),
-      views: [cardsView, statementsView]
+      kind: 'person',
+      label: 'type schema:Person',
+      when: [{ type: schema.Person }, IN_FOLDER],
+      views: [cardView, statementsView]
+    },
+    {
+      kind: 'graph',
+      label: 'graph',
+      when: inFolder({ graph: true }),
+      views: [subjectsGridView, subjectsListView]
     }
   ])
-  return [listingView(tripFolder(origin)), folderFrame, fileFrame, ...rows]
+  return [listingView(tripFolder(origin)), folderFrame, fileFrame, personFrame, ...rows]
 }

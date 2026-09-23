@@ -1,6 +1,7 @@
 // The rule table the landing page's hero draws under its folder: one row per
-// kind of file, each naming the view that draws that kind, and for four of
-// them a second view the row switches to.
+// kind of thing, a kind of file by its content type, a graph, or a person by
+// its rdf:type, each naming the view that draws it and, where the row is a
+// switch, a second view it switches to.
 //
 // host-core builds the renderer's registry itself and hands a host no way to
 // change its rules, so this table reaches selection through the views' own
@@ -12,11 +13,13 @@
 
 import { type Condition, holds, type Resource, type View } from '@aleph-garden/vitrine'
 
-export type Kind = 'txt' | 'csv' | 'geo' | 'md' | 'people'
+export type Kind = 'txt' | 'csv' | 'geo' | 'md' | 'graph' | 'person'
 
 /** The folder the rows apply to. Every row's conditions include it, so the
- *  table cannot change how a resource elsewhere on this deployment draws. */
-const IN_FOLDER: Condition = { iri: /\/fixtures\/trip\/[^/]+$/ }
+ *  table cannot change how a resource elsewhere on this deployment draws. It
+ *  tests the document's IRI, so a subject inside a file in the folder is in
+ *  the folder too. */
+export const IN_FOLDER: Condition = { iri: /\/fixtures\/trip\/[^/]+$/ }
 
 export type Row = {
   kind: Kind

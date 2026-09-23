@@ -204,23 +204,25 @@ export const noteView: View = {
 }
 
 // ---------------------------------------------------------------- people
+//
+// Each draws one person: the subject the rendering is about. The file that
+// holds them is a graph, which vitrine's subjects view takes apart, embedding
+// every person under its own fragment, where the rule on the type picks one
+// of these.
+
+const SCHEMA = 'https://schema.org/'
+const short = (iri: string) => (iri.startsWith(SCHEMA) ? `schema:${iri.slice(SCHEMA.length)}` : iri)
 
 type Person = { iri: string; name: string; email?: string }
 
-export function peopleOf(resource: Resource): Person[] {
-  const graph = contentOf(resource)
-  const subjects = [
-    ...new Set(
-      graph
-        .filter((q) => q.predicate.value === rdf.type && q.object.value === schema.Person)
-        .map((q) => q.subject.value)
-    )
-  ]
-  return subjects.map((iri) => {
-    const person = about(graph, iri)
-    const email = person.one('https://schema.org/email')
-    return { iri, name: person.one(schema.name) ?? iri, email: email?.replace(/^mailto:/, '') }
-  })
+export function personOf(resource: Resource): Person {
+  const person = about(resource)
+  const email = person.one(`${SCHEMA}email`)
+  return {
+    iri: person.iri,
+    name: person.one(schema.name) ?? person.iri,
+    email: email?.replace(/^mailto:/, '')
+  }
 }
 
 const initials = (name: string) =>
@@ -231,42 +233,32 @@ const initials = (name: string) =>
     .slice(0, 2)
     .toUpperCase()
 
-export const cardsView: View = {
-  id: `${VIEWS}person-cards`,
+export const cardView: View = {
+  id: `${VIEWS}person-card`,
   async render(resource) {
-    const cards = peopleOf(resource)
-      .map(
-        (p) =>
-          `<article class="trip-card"><span class="trip-initials" aria-hidden="true">${escapeHtml(initials(p.name))}</span><span class="trip-who"><span class="trip-name">${escapeHtml(p.name)}</span>${p.email ? `<span class="trip-email">${escapeHtml(p.email)}</span>` : ''}</span></article>`
-      )
-      .join('')
-    return { html: `<div class="trip-people">${cards}</div>` }
+    const p = personOf(resource)
+    return {
+      html: `<article class="trip-card"><span class="trip-initials" aria-hidden="true">${escapeHtml(initials(p.name))}</span><span class="trip-who"><span class="trip-name">${escapeHtml(p.name)}</span>${p.email ? `<span class="trip-email">${escapeHtml(p.email)}</span>` : ''}</span></article>`
+    }
   }
 }
 
-const SCHEMA = 'https://schema.org/'
-const short = (iri: string) => (iri.startsWith(SCHEMA) ? `schema:${iri.slice(SCHEMA.length)}` : iri)
-
-/** Each person's statements, with `a` for the type as Turtle writes it. */
+/** The person's statements, with `a` for the type as Turtle writes it. */
 export const statementsView: View = {
   id: `${VIEWS}statements`,
   async render(resource) {
-    const graph = contentOf(resource)
-    const tables = peopleOf(resource)
-      .map((p) => {
-        const rows = graph
-          .filter((q) => q.subject.value === p.iri)
-          .map((q) => {
-            const predicate = q.predicate.value === rdf.type ? 'a' : short(q.predicate.value)
-            const object =
-              q.object.termType === 'Literal' ? `"${q.object.value}"` : short(q.object.value)
-            return `<tr><td>${escapeHtml(predicate)}</td><td>${escapeHtml(object)}</td></tr>`
-          })
-          .join('')
-        const subject = `<${new URL(p.iri).hash || p.iri}>`
-        return `<table class="trip-statements"><thead><tr><th colspan="2">${escapeHtml(subject)}</th></tr></thead><tbody>${rows}</tbody></table>`
+    const subject = resource.subject ?? resource.iri
+    const rows = contentOf(resource)
+      .filter((q) => q.subject.value === subject)
+      .map((q) => {
+        const predicate = q.predicate.value === rdf.type ? 'a' : short(q.predicate.value)
+        const object = q.object.termType === 'Literal' ? `"${q.object.value}"` : short(q.object.value)
+        return `<tr><td>${escapeHtml(predicate)}</td><td>${escapeHtml(object)}</td></tr>`
       })
       .join('')
-    return { html: `<div class="trip-people">${tables}</div>` }
+    const head = `<${new URL(subject).hash || subject}>`
+    return {
+      html: `<table class="trip-statements"><thead><tr><th colspan="2">${escapeHtml(head)}</th></tr></thead><tbody>${rows}</tbody></table>`
+    }
   }
 }

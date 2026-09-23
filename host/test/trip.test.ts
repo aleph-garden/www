@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import { type Context, createRenderer, type Resource, type View } from '@aleph-garden/vitrine'
 import { turtleParser } from '@aleph-garden/vitrine-turtle'
-import { FILE_FRAME, FOLDER_FRAME, LISTING_VIEW, tripFolder, tripViews } from '../src/trip/index.ts'
-import { flip, isFlipped, onFlip } from '../src/trip/rules.ts'
+import { FILE_FRAME, FOLDER_FRAME, LISTING_VIEW, PERSON_FRAME, tripFolder, tripViews } from '../src/trip/index.ts'
+import { flip, isFlipped, onFlip, rowFor } from '../src/trip/rules.ts'
 import { budgetOf, lineOf, project, tasksOf } from '../src/trip/views.ts'
 
 const ORIGIN = 'https://pod.example'
@@ -38,13 +38,13 @@ const LISTING: Resource = {
 
 /** A context that records nothing and keeps no state, for views drawn
  *  without a runtime. */
-function context(): Context {
+function context(resolve: Context['resolve'] = () => Promise.reject(new Error('no resolve'))): Context {
   const ctx: Context = {
-    resolve: () => Promise.reject(new Error('no resolve')),
+    resolve,
     emit: () => {},
     events: (async function* () {})(),
     transclude: async (iri, show) =>
-      `<div data-aleph-transclude="${iri}" data-view="${show?.view ?? ''}"></div>`,
+      `<div data-aleph-transclude="${iri}" data-view="${show?.view ?? ''}" data-fragment="${show?.fragment ?? ''}"></div>`,
     about: () => {
       throw new Error('no about')
     },
@@ -59,6 +59,13 @@ function context(): Context {
 
 const views: View[] = tripViews(ORIGIN)
 const renderer = createRenderer({ parsers: [turtleParser()], views })
+
+/** Answers the fixtures above, parsed the way the runtime answers them. */
+const resolveFiles: Context['resolve'] = async (iri) => {
+  const found = [PACKING, BUDGET, ROUTE, PEOPLE].find((r) => r.iri === iri)
+  if (!found) throw new Error(`no ${iri}`)
+  return renderer.parse(found)
+}
 
 describe('the files in the folder', () => {
   test('reads a task list, a budget and a line', () => {
@@ -92,22 +99,39 @@ describe('the files in the folder', () => {
       [PACKING, 'checklist'],
       [BUDGET, 'table'],
       [ROUTE, 'map'],
-      [PEOPLE, 'person-cards']
+      [PEOPLE, 'subjects-grid']
     ] as const) {
       const parsed = await renderer.parse(resource)
       expect(renderer.select(parsed)?.id).toEndWith(expected)
     }
   })
 
-  test('draws two people as cards, and their statements with `a` for the type', async () => {
+  test('takes the graph apart, embedding each person under its fragment', async () => {
     const parsed = await renderer.parse(PEOPLE)
-    const cards = await renderer.render(parsed, context())
-    expect(cards.html).toContain('Mara Lind')
-    expect(cards.html).toContain('mara@example.org')
+    const drawn = await renderer.render(parsed, context())
+    const embedded = [...drawn.html.matchAll(/data-aleph-transclude="([^"]+)" data-view="" data-fragment="([^"]+)"/g)].map(
+      (m) => `${m[1]}#${m[2]}`
+    )
+    expect(embedded).toEqual([`${FOLDER}people.ttl#a`, `${FOLDER}people.ttl#b`])
+  })
+
+  test('picks every person by its type, framed, whatever file holds it', async () => {
+    const parsed = await renderer.parse(PEOPLE)
+    for (const fragment of ['a', 'b']) {
+      expect(renderer.select(parsed, { fragment })?.id).toBe(PERSON_FRAME)
+    }
+    const mara = await renderer.render(parsed, context(), { fragment: 'a' })
+    expect(mara.view.id).toBe(PERSON_FRAME)
+    expect(mara.html).toContain('Mara Lind')
+    expect(mara.html).toContain('mara@example.org')
+    expect(mara.html).toContain('#a')
+    expect(mara.html).toContain('schema:Person')
     const statements = await renderer.render(parsed, context(), {
+      fragment: 'b',
       view: 'https://aleph.garden/views/statements'
     })
     expect(statements.html).toContain('<td>a</td><td>schema:Person</td>')
+    expect(statements.html).toContain('&lt;#b&gt;')
   })
 
   test('adds the total under the budget', async () => {
@@ -135,22 +159,54 @@ describe('the rule table', () => {
     expect(isFlipped('md')).toBe(false)
   })
 
-  test('applies only inside the folder', () => {
+  test('applies only inside the folder', async () => {
     const elsewhere = { ...BUDGET, iri: `${ORIGIN}/budget.csv` }
     expect(renderer.select(elsewhere)).toBeUndefined()
+    const people = await renderer.parse({ ...PEOPLE, iri: `${ORIGIN}/people.ttl` })
+    expect(renderer.select(people, { fragment: 'a' })).toBeUndefined()
+  })
+
+  test('the type row switches both people, and tells the frames of that row', async () => {
+    const parsed = await renderer.parse(PEOPLE)
+    expect(rowFor({ ...parsed, subject: `${parsed.iri}#a` })?.kind).toBe('person')
+    expect(rowFor({ ...parsed, subject: `${parsed.iri}#b` })?.kind).toBe('person')
+    expect(rowFor(parsed)?.kind).toBe('graph')
+    const heard: string[] = []
+    const stop = onFlip((kind) => heard.push(kind))
+    flip('person')
+    for (const fragment of ['a', 'b']) {
+      const drawn = await renderer.render(parsed, context(), { fragment })
+      expect(drawn.view.id).toBe(PERSON_FRAME)
+      expect(drawn.html).toContain('trip-statements')
+      expect(drawn.html).not.toContain('trip-card')
+    }
+    expect(heard).toEqual(['person'])
+    flip('person')
+    const back = await renderer.render(parsed, context(), { fragment: 'a' })
+    expect(back.html).toContain('trip-card')
+    stop()
   })
 })
 
 describe('the listing', () => {
-  test('frames each file, people last, and draws the table and the caption', async () => {
+  test('frames each file, the graph last and drawn in place, and draws the table and the caption', async () => {
     const parsed = await renderer.parse(LISTING)
     expect(renderer.select(parsed)?.id).toBe(LISTING_VIEW)
-    const drawn = await renderer.render(parsed, context())
+    const drawn = await renderer.render(parsed, context(resolveFiles))
     const order = [...drawn.html.matchAll(/data-aleph-transclude="([^"]+)"/g)].map((m) => m[1])
-    expect(order).toEqual([`${FOLDER}packing.txt`, `${FOLDER}budget.csv`, `${FOLDER}people.ttl`])
+    expect(order).toEqual([
+      `${FOLDER}packing.txt`,
+      `${FOLDER}budget.csv`,
+      `${FOLDER}people.ttl`,
+      `${FOLDER}people.ttl`
+    ])
+    expect(drawn.html).toMatch(/data-aleph-transclude="[^"]+people\.ttl" data-view="" data-fragment="a"/)
+    expect(drawn.html).toContain('class="trip-inline"')
     expect(drawn.html).toContain(`data-view="${FILE_FRAME}"`)
     expect(drawn.html).toContain('class="trip-rule" data-kind="csv"')
     expect(drawn.html).toContain('The rules picked <code>checklist</code> for packing.txt')
+    expect(drawn.html).toContain('<code>subjects-grid</code> for people.ttl and <code>person-card</code> for each schema:Person in it.')
+    expect(drawn.html).toContain('class="trip-rule" data-kind="person"')
   })
 })
 
@@ -186,7 +242,7 @@ describe('folding the folder', () => {
 
   test('the listing carries the one-line summary a folded folder shows', async () => {
     const parsed = await renderer.parse(LISTING)
-    const drawn = await renderer.render(parsed, context())
+    const drawn = await renderer.render(parsed, context(resolveFiles))
     expect(drawn.html).toContain(
       '<p class="trip-summary">3 files: packing.txt, budget.csv, people.ttl</p>'
     )
