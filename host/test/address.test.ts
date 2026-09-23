@@ -9,7 +9,7 @@ describe('gardenAddress.of', () => {
     const href = `https://aleph.garden${PREFIX}https://other.example/notes/a.md?view=urn:x`
     expect(gardenAddress.of(href)).toEqual({
       iri: 'https://other.example/notes/a.md',
-      hint: { view: 'urn:x' },
+      show: { view: 'urn:x' },
       href
     })
   })
@@ -39,7 +39,7 @@ describe('gardenAddress.for', () => {
   test('puts an IRI from another origin behind the reserved segment', () => {
     expect(gardenAddress.for('https://other.example/notes/b.md#Intro')).toEqual({
       iri: 'https://other.example/notes/b.md',
-      hint: { fragment: 'Intro' },
+      show: { fragment: 'Intro' },
       href: `https://pod.example${PREFIX}https://other.example/notes/b.md#Intro`
     })
   })
@@ -47,7 +47,7 @@ describe('gardenAddress.for', () => {
   test('an IRI on the host origin is its own location', () => {
     expect(gardenAddress.for('https://pod.example/notes/b.md#Intro')).toEqual({
       iri: 'https://pod.example/notes/b.md',
-      hint: { fragment: 'Intro' },
+      show: { fragment: 'Intro' },
       href: 'https://pod.example/notes/b.md#Intro'
     })
   })
@@ -57,7 +57,7 @@ describe('gardenAddress.for', () => {
     expect(gardenAddress.for(href).iri).toBe('https://other.example/notes/b.md')
   })
 
-  test('the location it builds reads back as the same resource and hint', () => {
+  test('the location it builds reads back as the same resource and show', () => {
     for (const url of [
       'https://pod.example/notes/b.md#Intro',
       'https://pod.example/docs/view/',

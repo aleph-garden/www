@@ -11,7 +11,7 @@
 // The IRI stays unencoded, so that a reader can read it and copy it out.
 
 import type { Address, AddressScheme } from '@aleph-garden/host-core'
-import { hintOf, locationAddress } from '@aleph-garden/host-core'
+import { showOf, locationAddress } from '@aleph-garden/host-core'
 
 export const PREFIX = '/-/'
 
@@ -19,14 +19,14 @@ export const gardenAddress = {
   of(href): Address {
     const url = new URL(href)
     if (!url.pathname.startsWith(PREFIX)) return locationAddress(href)
-    return { iri: decodeURI(url.pathname.slice(PREFIX.length)), hint: hintOf(url), href }
+    return { iri: decodeURI(url.pathname.slice(PREFIX.length)), show: showOf(url), href }
   },
   for(url): Address {
     const target = new URL(url)
     if (target.origin === location.origin) return gardenAddress.of(target.href)
     return {
       iri: `${target.origin}${target.pathname}`,
-      hint: hintOf(target),
+      show: showOf(target),
       href: `${location.origin}${PREFIX}${target.href}`
     }
   }

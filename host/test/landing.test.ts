@@ -19,7 +19,12 @@ function recording(): { ctx: Context; asked: string[] } {
       transclude: async (iri) => {
         asked.push(iri)
         return `<div data-aleph-transclude="${iri}"></div>`
-      }
+      },
+      inner: () => Promise.reject(new Error('no inner view')),
+      state: ((_key: string, initial?: unknown) => ({
+        get: () => initial,
+        set() {}
+      })) as Context['state']
     }
   }
 }
