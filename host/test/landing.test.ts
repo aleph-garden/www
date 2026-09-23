@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
 import { type Context, createRenderer, fallbackView, type Resource } from '@aleph-garden/vitrine'
 import projects from '../../public/projects.json'
-import { HERO_FOLDER, LANDING_VIEW, landingView, VOCABULARY } from '../src/landing.ts'
+import { LANDING_VIEW, landingView, VOCABULARY } from '../src/landing.ts'
 
 const SOURCES = { ambient: '<svg class="ambient" aria-hidden="true"></svg>' }
 const landing = landingView('https://pod.example', SOURCES)
@@ -55,12 +55,13 @@ describe('landingView', () => {
     expect(rendered.html).toContain('<code>https://pod.example/</code>')
   })
 
-  test('names the folder the hero will draw and asks for nothing from it yet', async () => {
+  test('draws the hero as the trip folder in its frame, beside the vocabulary', async () => {
     const { ctx, asked } = recording()
     const rendered = await landing.render(resource('https://pod.example/'), ctx)
-    expect(rendered.html).toContain(`<code>${HERO_FOLDER}</code>`)
-    expect(asked).toEqual([VOCABULARY])
-    expect(rendered.html).toContain(`<div data-aleph-transclude="${VOCABULARY}"></div>`)
+    expect(asked).toEqual(['https://pod.example/fixtures/trip/', VOCABULARY])
+    expect(rendered.html).toContain(
+      '<div data-aleph-transclude="https://pod.example/fixtures/trip/"></div>'
+    )
   })
 
   test('lists every project from the shared file, with docs where there are any', async () => {

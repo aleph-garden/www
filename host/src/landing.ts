@@ -8,6 +8,7 @@
 
 import { escapeHtml, type View } from '@aleph-garden/vitrine'
 import projects from '../../public/projects.json'
+import { FOLDER_FRAME, tripFolder } from './trip/index.ts'
 import { footer } from '@aleph-garden/starlight-theme/footer'
 import { installTheme } from '@aleph-garden/starlight-theme/theme'
 import fullDark from '@aleph-garden/brand/lockups/lockup-horizontal-full-dark.svg?url'
@@ -16,10 +17,6 @@ import shortDark from '@aleph-garden/brand/lockups/lockup-horizontal-short-dark.
 import shortLight from '@aleph-garden/brand/lockups/lockup-horizontal-short-light.svg?url'
 
 export const LANDING_VIEW = 'https://aleph.garden/views/landing'
-
-/** The folder the hero will draw. The figure is still in design, so the page
- *  names the address and draws nothing from it yet. */
-export const HERO_FOLDER = 'https://aleph.garden/fixtures/trip/'
 
 /** What the build prepares for the page: the field behind the opening, which
  *  the ambient view drew from the vocabulary. */
@@ -125,7 +122,7 @@ const siteFooter = footer({
   }
 })
 
-function page(origin: string, sources: Sources, vocabulary: string): string {
+function page(origin: string, sources: Sources, hero: string, vocabulary: string): string {
   const here = escapeHtml(`${origin}/`)
   return `<div class="landing">
     <div class="page">
@@ -146,10 +143,7 @@ function page(origin: string, sources: Sources, vocabulary: string): string {
 
           <div class="content">
             <section class="hero">
-              <figure class="artefact pending">
-                <div class="artefact-head"><code>${escapeHtml(HERO_FOLDER)}</code></div>
-                <p class="artefact-body">A folder of files from a trip, each drawn by the view a rule picked for it. This figure is still in design.</p>
-              </figure>
+              <figure class="artefact folder">${hero}</figure>
               <p>This page is drawn the same way. A rule matched the address <code>${here}</code>, named a view, and that view returned the markup you are reading. Change the row and the page draws differently.</p>
             </section>
 
@@ -215,9 +209,12 @@ export function landingView(origin: string, sources: Sources): View {
       // What `transclude` answers goes into the string verbatim: a placeholder
       // the runtime mounts a child into, or the child itself on a host that
       // renders ahead of time.
-      const vocabulary = await ctx.transclude(VOCABULARY)
+      const [hero, vocabulary] = await Promise.all([
+        ctx.transclude(tripFolder(origin), { view: FOLDER_FRAME }),
+        ctx.transclude(VOCABULARY)
+      ])
       return {
-        html: page(origin, sources, vocabulary),
+        html: page(origin, sources, hero, vocabulary),
         hydrate: (root) => {
           const stop = installTheme(root)
           return { dispose: stop }

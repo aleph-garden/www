@@ -1,0 +1,9 @@
+@prefix schema: <https://schema.org/> .
+
+<#mara> a schema:Person ;
+    schema:name "Mara Lind" ;
+    schema:email <mailto:mara@example.org> .
+
+<#jonas> a schema:Person ;
+    schema:name "Jonas Berg" ;
+    schema:email <mailto:jonas@example.org> .

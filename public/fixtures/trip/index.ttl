@@ -1,0 +1,4 @@
+@prefix ldp: <http://www.w3.org/ns/ldp#> .
+
+<> a ldp:Container, ldp:BasicContainer ;
+    ldp:contains <packing.txt>, <budget.csv>, <route.geojson>, <notes.md>, <people.ttl> .

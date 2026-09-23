@@ -193,33 +193,372 @@
   margin-top: 0;
 }
 
-/* A figure whose drawing is not built yet: the address it will draw, and one
-   muted sentence saying so. */
-.artefact-head {
-  padding: var(--ag-space-2) var(--ag-space-4);
-  background: var(--ag-sunken);
-  border-bottom: var(--ag-stroke-hair) solid var(--ag-border);
+/* --- the hero's folder --- */
+
+/* The folder and each file are frames from @aleph-garden/vitrine/frame, drawn
+   by host-core's stylesheet; what follows is what the files show and the rule
+   table under them. Colour means something here or nowhere: the dot names
+   the kind of file, and the accent marks a row that was switched. */
+.content .artefact.folder {
+  margin: 0;
+  max-width: none;
 }
-.artefact-head code {
-  font-size: var(--ag-type-xs);
-  line-height: var(--ag-leading-xs);
-  color: var(--ag-text-muted);
+.trip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ag-space-4);
+}
+.trip-files {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
+  gap: var(--ag-space-4);
+}
+.trip-cell {
+  min-width: 0;
+}
+.trip-cell[data-wide] {
+  grid-column: 1 / -1;
+}
+/* The runtime's region sits between the cell and the frame, so both take the
+   row's height and the frames in a row line up. */
+.trip-cell > [data-aleph-view],
+.trip-cell .aleph-frame {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+/* The category tokens are specified in tokens.md section 9 and not yet in
+   @aleph-garden/brand, so each names its specified value as the fallback. */
+.trip-dot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--ag-border-strong);
+}
+.trip-dot[data-kind='txt'] { background: var(--ag-cat-3, #335900); }
+.trip-dot[data-kind='csv'] { background: var(--ag-cat-2, #009984); }
+.trip-dot[data-kind='geo'] { background: var(--ag-cat-4, #c98000); }
+.trip-dot[data-kind='md'] { background: var(--ag-cat-6, #c4474b); }
+.trip-dot[data-kind='people'] { background: var(--ag-cat-5, #a57be8); }
+.trip-address {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--ag-font-mono);
+  font-weight: 400;
   user-select: all;
 }
-.artefact.pending {
-  border: var(--ag-stroke-hair) solid var(--ag-border);
-  border-radius: var(--ag-radius-2);
-  background: var(--ag-raised);
-  overflow: hidden;
-}
-.content .artefact-body {
+
+.content .trip p,
+.content .trip ul,
+.content .trip ol {
   max-width: none;
+}
+.trip-checklist ul,
+.trip-bars,
+.trip-rules ul {
   margin: 0;
-  padding: var(--ag-space-8) var(--ag-space-5);
+  padding: 0;
+  list-style: none;
+}
+.trip-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ag-space-2);
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+}
+.trip-checklist label {
+  display: flex;
+  gap: var(--ag-space-2);
+  align-items: center;
+  cursor: pointer;
+}
+.trip-checklist input {
+  margin: 0;
+  accent-color: var(--ag-text);
+}
+.trip-checklist li:has(input:checked) {
+  color: var(--ag-text-muted);
+  text-decoration: line-through;
+}
+.content .trip-tally,
+.trip-coordinates,
+.trip-plain {
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+}
+.content .trip-tally {
+  margin: 0;
+  color: var(--ag-text-muted);
+}
+.trip-plain {
+  margin: 0;
+  white-space: pre-wrap;
+}
+.trip-table,
+.trip-statements {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+  font-variant-numeric: tabular-nums;
+}
+.trip-table th,
+.trip-table td,
+.trip-statements td {
+  padding: var(--ag-space-1) 0;
+  border-bottom: var(--ag-stroke-hair) solid var(--ag-border);
+  text-align: start;
+}
+.trip-table th {
+  font-weight: 400;
+  color: var(--ag-text-muted);
+  border-bottom-color: var(--ag-border-strong);
+}
+.trip-table td:last-child,
+.trip-table th:last-child {
+  text-align: end;
+}
+.trip-table .trip-total td {
+  border-bottom: 0;
+  font-weight: 600;
+}
+.trip-bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ag-space-2);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+  font-variant-numeric: tabular-nums;
+}
+.trip-bar-label {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--ag-space-2);
+}
+.trip-bar-label span:last-child {
+  color: var(--ag-text-muted);
+}
+.trip-bar {
+  display: block;
+  width: 100%;
+  height: 0.5rem;
+  margin-top: var(--ag-space-1);
+}
+.trip-bar-track { fill: var(--ag-sunken); }
+.trip-bar-fill { fill: var(--ag-border-strong); }
+.trip-map {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.trip-map polyline {
+  fill: none;
+  stroke: var(--ag-text);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.trip-start { fill: var(--ag-raised); stroke: var(--ag-text); stroke-width: 1.5; }
+.trip-end { fill: var(--ag-text); }
+.trip-coordinates {
+  margin: 0;
+  padding-inline-start: var(--ag-space-5);
+}
+.trip-note {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ag-space-2);
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+}
+.trip-note h3 {
+  margin: 0;
+  font-family: var(--ag-font-display);
+  font-size: var(--ag-type-ui);
+  font-weight: 600;
+}
+.content .trip-note p {
+  margin: 0;
+}
+.content .trip-stops {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ag-space-2);
+  margin: 0;
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+}
+.trip-stops span:not(.trip-arrow) {
+  padding: var(--ag-space-1) var(--ag-space-2);
+  border: var(--ag-stroke-hair) solid var(--ag-border-strong);
+}
+.trip-arrow {
+  color: var(--ag-text-muted);
+}
+.trip-people {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13.75rem, 1fr));
+  gap: var(--ag-space-3);
+}
+.trip-card {
+  display: flex;
+  gap: var(--ag-space-3);
+  align-items: center;
+  min-width: 0;
+}
+.trip-initials {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  background: var(--ag-sunken);
+  border: var(--ag-stroke-hair) solid var(--ag-border);
+  color: var(--ag-text-muted);
+  font-family: var(--ag-font-display);
+  font-weight: 600;
+  font-size: var(--ag-type-xs);
+}
+.trip-who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.trip-name {
+  font-family: var(--ag-font-display);
+  font-weight: 600;
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+}
+.trip-email {
+  color: var(--ag-text-muted);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+  overflow-wrap: anywhere;
+}
+.trip-statements {
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+}
+.trip-statements th {
+  padding-bottom: var(--ag-space-1);
+  border-bottom: var(--ag-stroke-hair) solid var(--ag-border-strong);
+  font-weight: 400;
+  text-align: start;
+}
+.trip-statements td:first-child {
+  padding-inline-end: var(--ag-space-3);
+  color: var(--ag-text-muted);
+  white-space: nowrap;
+}
+.trip-statements td:last-child {
+  overflow-wrap: anywhere;
+}
+
+/* The rule table. A row with two views is a button; pressing it switches the
+   row, and the switched state is the one place the accent appears. */
+.trip-rules {
+  border-top: var(--ag-stroke-hair) solid var(--ag-border);
+  margin-inline: calc(-1 * var(--ag-space-3));
+}
+.content .trip-rules-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ag-space-1) var(--ag-space-4);
+  align-items: baseline;
+  margin: 0;
+  padding: var(--ag-space-3) var(--ag-space-4) var(--ag-space-2);
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+  color: var(--ag-text-muted);
+}
+.trip-rules-head span:first-child {
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.trip-rule {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--ag-space-1) var(--ag-space-3);
+  padding: var(--ag-space-2) var(--ag-space-4);
+  border-top: var(--ag-stroke-hair) solid var(--ag-border);
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-ui);
+  cursor: pointer;
+}
+.trip-rule[disabled] {
+  cursor: default;
+}
+.trip-rule:not([disabled]):hover {
+  background: var(--ag-sunken);
+}
+.trip-rule:focus-visible {
+  outline: 2px solid var(--ag-focus);
+  outline-offset: -2px;
+}
+.trip-rule[aria-pressed='true'] {
+  background: var(--ag-accent-surface);
+  color: var(--ag-accent-hover);
+}
+.trip-cond {
+  flex: 1 1 13.75rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.trip-views {
+  flex: 1 1 15rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ag-space-1) calc(var(--ag-space-1) + var(--ag-space-1) / 2);
+  align-items: baseline;
+  color: var(--ag-text-muted);
+}
+.trip-view {
+  padding: 0 calc(var(--ag-space-1) + var(--ag-space-1) / 2);
+  border: var(--ag-stroke-hair) solid var(--ag-border);
+  border-radius: var(--ag-radius-1);
+  color: var(--ag-text-muted);
+}
+.trip-view[data-on] {
+  border-color: var(--ag-accent-border);
+  color: var(--ag-accent);
+}
+.trip-swap {
+  color: var(--ag-text-muted);
+}
+.trip-state {
+  flex: none;
+  min-width: 4rem;
+  text-align: end;
+  color: var(--ag-text-muted);
+}
+.trip-rule[aria-pressed='true'] .trip-state {
+  color: var(--ag-accent-hover);
+}
+.content .trip-caption {
+  margin: 0;
   color: var(--ag-text-muted);
   font-size: var(--ag-type-ui);
   line-height: var(--ag-leading-ui);
-  text-align: center;
+}
+.trip-caption code {
+  color: var(--ag-text);
 }
 
 /* --- the lockup --- */

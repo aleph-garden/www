@@ -31,6 +31,19 @@ const IRI_PATH = /^\/-\//
 const VOCABULARY = '/ns/vitrine'
 const DESCRIPTOR = /^\/views\/[a-z-]+$/
 
+// The files the landing page's hero draws. The folder has no file of its own,
+// so its listing is served from index.ttl, and each file gets the type its
+// extension names, which the rules on the page select by.
+const FIXTURE_FOLDER = /^\/fixtures\/trip\/$/
+const FIXTURE = /^\/fixtures\/trip\/[a-z-]+\.(txt|csv|geojson|md|ttl)$/
+const FIXTURE_TYPES = {
+  txt: 'text/plain',
+  csv: 'text/csv',
+  geojson: 'application/geo+json',
+  md: 'text/markdown',
+  ttl: 'text/turtle'
+}
+
 // Each document has one representation and no HTML one, so a browser gets it
 // as text/plain and reads it rather than downloading it.
 function typed(doc, request, contentType) {
@@ -55,6 +68,15 @@ export default {
     }
     if (url.pathname === VOCABULARY) {
       return typed(await env.ASSETS.fetch(request), request, 'text/turtle')
+    }
+    if (FIXTURE_FOLDER.test(url.pathname)) {
+      const listing = await env.ASSETS.fetch(new Request(new URL('/fixtures/trip/index.ttl', url.origin), request))
+      return typed(listing, request, 'text/turtle')
+    }
+    const fixture = FIXTURE.exec(url.pathname)
+    if (fixture) {
+      const doc = await env.ASSETS.fetch(request)
+      return doc.ok ? typed(doc, request, FIXTURE_TYPES[fixture[1]]) : doc
     }
     if (DESCRIPTOR.test(url.pathname)) {
       const doc = await env.ASSETS.fetch(request)
