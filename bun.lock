@@ -5,13 +5,13 @@
     "": {
       "name": "aleph-garden-www",
       "dependencies": {
-        "@aleph-garden/brand": "0.1.2-dev",
-        "@aleph-garden/host-core": "0.3.0-dev",
+        "@aleph-garden/brand": "0.1.3-dev",
+        "@aleph-garden/host-core": "0.3.1-dev",
         "@aleph-garden/starlight-theme": "workspace:*",
-        "@aleph-garden/terms": "0.3.0-dev",
-        "@aleph-garden/vitrine": "0.3.0-dev",
-        "@aleph-garden/vitrine-jsonld": "0.3.0-dev",
-        "@aleph-garden/vitrine-turtle": "0.3.0-dev",
+        "@aleph-garden/terms": "0.3.1-dev",
+        "@aleph-garden/vitrine": "0.3.1-dev",
+        "@aleph-garden/vitrine-jsonld": "0.3.1-dev",
+        "@aleph-garden/vitrine-turtle": "0.3.1-dev",
         "@astrojs/starlight": "^0.42.1",
         "astro": "^7.3.3",
         "astro-mermaid": "^2.1.0",
@@ -29,9 +29,9 @@
     },
     "packages/starlight-theme": {
       "name": "@aleph-garden/starlight-theme",
-      "version": "0.1.4-dev",
+      "version": "0.1.5-dev",
       "dependencies": {
-        "@aleph-garden/brand": "0.1.2-dev",
+        "@aleph-garden/brand": "0.1.3-dev",
       },
       "peerDependencies": {
         "@astrojs/starlight": ">=0.42.0",
@@ -39,19 +39,19 @@
     },
   },
   "packages": {
-    "@aleph-garden/brand": ["@aleph-garden/brand@0.1.2-dev", "", {}, "sha512-wADTk9BepkHA9n9v6vgJR4hm4t24HEqzVvsTCcyE3AXj4v2EnwyPklZWOcHQGd1tNuwNTzSe+C4udV/FHH2SJQ=="],
+    "@aleph-garden/brand": ["@aleph-garden/brand@0.1.3-dev", "", {}, "sha512-II7q3IdEOWolx1OOUQfrI/SGoBeAmyNGVdXfFNQkOIk7KkGVkTkAmrZdILADJqBp/ycbRU//VrlkfO9W/zkDBg=="],
 
-    "@aleph-garden/host-core": ["@aleph-garden/host-core@0.3.0-dev", "", { "dependencies": { "@aleph-garden/brand": "0.1.1-dev", "@aleph-garden/terms": "0.3.0-dev", "@aleph-garden/vitrine": "0.3.0-dev", "@inrupt/solid-client-authn-browser": "^5.0.0" }, "peerDependencies": { "vite": "^8.0.0" }, "optionalPeers": ["vite"] }, "sha512-JGEet2gnlpcLfIgE4JVSb7HxJ2UDOxJw/LHZA6QyFag33iP1i3hMrGDWPZpFyGSlqiqJGP3bvAc+kKJztpAIMw=="],
+    "@aleph-garden/host-core": ["@aleph-garden/host-core@0.3.1-dev", "", { "dependencies": { "@aleph-garden/brand": "0.1.1-dev", "@aleph-garden/terms": "0.3.1-dev", "@aleph-garden/vitrine": "0.3.1-dev", "@inrupt/solid-client-authn-browser": "^5.0.0" }, "peerDependencies": { "vite": "^8.0.0" }, "optionalPeers": ["vite"] }, "sha512-JfWk8iM7Q+VWceOjoNFfEaHE41Acf78487nAvaG+xKYpvTtEP4g1mlpL2mE5RK4aTrmxoPNMEReJDYtRtHlNwg=="],
 
     "@aleph-garden/starlight-theme": ["@aleph-garden/starlight-theme@workspace:packages/starlight-theme"],
 
-    "@aleph-garden/terms": ["@aleph-garden/terms@0.3.0-dev", "", {}, "sha512-tPpLLjAYc1MG7a0ch3vy8eQBq317LTulQrOWV1e1JV6hoiTipEn7JvUc3n1/rJoiGSnch7SEcp2u/fw++5Ptlw=="],
+    "@aleph-garden/terms": ["@aleph-garden/terms@0.3.1-dev", "", {}, "sha512-tOm+o7GQ41VjU6pG/0yfP1xD83qAn7z+/ZQ1xpS/z0n+Qc+T6HcsX2FpXyB7FtqiiN9B0hr5c3mpJPi45P6H8A=="],
 
-    "@aleph-garden/vitrine": ["@aleph-garden/vitrine@0.3.0-dev", "", { "dependencies": { "@aleph-garden/terms": "0.3.0-dev", "dompurify": "^3.4.15" } }, "sha512-Y1afOhmFf2Ca4Yh2yr7kcO9wcb/h7yI9UKL35c4/TnqSKlnJq9d5mula7YEawRCVuNC7IZ69sXaPeW6o+tdotQ=="],
+    "@aleph-garden/vitrine": ["@aleph-garden/vitrine@0.3.1-dev", "", { "dependencies": { "@aleph-garden/terms": "0.3.1-dev", "dompurify": "^3.4.15" } }, "sha512-TnGnf5HR9JxcIrJQ922gwnvL9hgkIjZE22Zwc1tmYxW8TFHjEp+YnpUFv4fCjzHiSjEBloiPiTN9R/oeEToGSQ=="],
 
-    "@aleph-garden/vitrine-jsonld": ["@aleph-garden/vitrine-jsonld@0.3.0-dev", "", { "dependencies": { "@aleph-garden/vitrine": "0.3.0-dev", "jsonld-streaming-parser": "^5.0.1" } }, "sha512-M2zL7F3Sf+WaS0yRoaH4iDTvZfvzRotbcAuoWw9chcp5VoiLBnrErl1NasnGcm61yRwoFI5+1J++dbQrX+vAEQ=="],
+    "@aleph-garden/vitrine-jsonld": ["@aleph-garden/vitrine-jsonld@0.3.1-dev", "", { "dependencies": { "@aleph-garden/vitrine": "0.3.1-dev", "jsonld-streaming-parser": "^5.0.1" } }, "sha512-VSskY4ENF7w/p/XN6Xt2tyL+H0jPX/LoKKXlHybXvw+pcsGqU1wEv/6FHk7w2icw+xRJXoz/hocAFrSQHJ/A7A=="],
 
-    "@aleph-garden/vitrine-turtle": ["@aleph-garden/vitrine-turtle@0.3.0-dev", "", { "dependencies": { "@aleph-garden/vitrine": "0.3.0-dev", "n3": "^2.7.12" } }, "sha512-eJRbBTsD29Eytknos5bEFJuRQV18eZt5keid1ZTmU+UBSOjg1TU9nAW95yxEFzOcK4Ie9oI88sBXFUFCaDERnw=="],
+    "@aleph-garden/vitrine-turtle": ["@aleph-garden/vitrine-turtle@0.3.1-dev", "", { "dependencies": { "@aleph-garden/vitrine": "0.3.1-dev", "n3": "^2.7.12" } }, "sha512-OMhBBacwEr3o6qqnRnwqQ3Nvs5Z4HBEQuIsr4YC9v/jvRtwoxvJnHH+4p4eEbStzDJbDNUp8+WkPA2LlGnlWrw=="],
 
     "@antfu/install-pkg": ["@antfu/install-pkg@2.1.0", "", { "dependencies": { "package-manager-detector": "^1.8.0", "tinyexec": "^1.3.1" } }, "sha512-sdg9NxU3zR4Mnawfbc/x6GB5Wf17WYud5qOuEuxXjaKpYpMkISSJEjItGebXJ2bQ4DIcly4NYH23mtkGJjvKUw=="],
 
