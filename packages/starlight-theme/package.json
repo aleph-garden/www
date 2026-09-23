@@ -46,6 +46,6 @@
     "@astrojs/starlight": ">=0.42.0"
   },
   "dependencies": {
-    "@aleph-garden/brand": "0.1.0-dev"
+    "@aleph-garden/brand": "0.1.1-dev"
   }
 }
