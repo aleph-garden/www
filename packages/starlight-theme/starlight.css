@@ -1,6 +1,7 @@
-/* The faces and tokens every Aleph Garden surface shares, first so the
+/* The faces, from the one URL every page on aleph.garden shares so a reader
+   moving between sites keeps them cached, and the tokens, first so the
    mapping below reads them. */
-@import "@aleph-garden/brand/fonts.css";
+@import "@aleph-garden/brand/fonts-aleph-garden.css";
 @import "@aleph-garden/brand/tokens.css";
 
 /* Starlight's custom properties, read from the --ag-* tokens. Unlayered, so

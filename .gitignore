@@ -5,3 +5,6 @@ dist/
 
 # annot: local annotation queue and screenshots
 .annot/
+
+# Copied from @aleph-garden/brand by `bun run fonts`; served at /fonts/.
+public/fonts/

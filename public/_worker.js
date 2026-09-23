@@ -15,7 +15,7 @@ const POLICY = [
   "script-src 'self'",
   "style-src 'self' https: 'unsafe-inline'",
   "img-src 'self' https: data:",
-  "font-src 'self' data:",
+  "font-src 'self' https://aleph.garden data:",
   "connect-src 'self' https:",
   "object-src 'none'",
   "base-uri 'none'",
@@ -23,6 +23,20 @@ const POLICY = [
   "require-trusted-types-for 'script'",
   'trusted-types aleph dompurify'
 ].join('; ')
+
+// Build output under a hashed name, and the fonts, never change under their
+// name, so a reader keeps them for a year. The fonts are the ones every page on
+// the domain loads, including documentation deployed elsewhere and local
+// previews, so they answer any origin.
+const IMMUTABLE = /^\/(assets|_astro|fonts)\//
+
+function cached(response, pathname) {
+  if (!response.ok || !IMMUTABLE.test(pathname)) return response
+  const out = new Response(response.body, response)
+  out.headers.set('cache-control', 'public, max-age=31536000, immutable')
+  if (pathname.startsWith('/fonts/')) out.headers.set('access-control-allow-origin', '*')
+  return out
+}
 
 const IRI_PATH = /^\/-\//
 
@@ -82,6 +96,6 @@ export default {
       const doc = await env.ASSETS.fetch(request)
       return doc.ok ? typed(doc, request, 'application/ld+json') : doc
     }
-    return env.ASSETS.fetch(request)
+    return cached(await env.ASSETS.fetch(request), url.pathname)
   }
 }

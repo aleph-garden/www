@@ -2,7 +2,7 @@ import { fileURLToPath } from 'node:url'
 
 /**
  * The Aleph Garden theme for Starlight. It brings the design tokens, the
- * self-hosted faces, the header's site title with the project switcher, and
+ * faces from aleph.garden with their preloads, the header's site title with the project switcher, and
  * the site footer. The project keeps its own title, sidebar and content.
  *
  * `project` is the path segment the project's documentation lives under on
@@ -20,6 +20,7 @@ export default function aleph({ project, prerelease = false }) {
     hooks: {
       'config:setup'({ config, updateConfig, addIntegration }) {
         updateConfig({
+          head: [...(config.head ?? []), ...PRELOAD],
           customCss: [
             ...(config.customCss ?? []),
             '@aleph-garden/starlight-theme/starlight.css',
@@ -46,6 +47,16 @@ export default function aleph({ project, prerelease = false }) {
     }
   }
 }
+
+/** The two faces a page sets above the fold, fetched before the stylesheet
+ *  asks for them. Their URLs are the ones fonts-aleph-garden.css names. */
+const PRELOAD = [
+  'https://aleph.garden/fonts/ibm-plex-sans-latin.woff2',
+  'https://aleph.garden/fonts/sora-semibold-latin.woff2'
+].map((href) => ({
+  tag: 'link',
+  attrs: { rel: 'preload', as: 'font', type: 'font/woff2', crossorigin: 'anonymous', href }
+}))
 
 const OPTIONS_ID = 'virtual:aleph-garden/starlight-theme'
 

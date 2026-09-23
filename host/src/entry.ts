@@ -1,9 +1,12 @@
-// The tokens and the shell first, then the faces they name, then this site's
-// own pages. Order matters for the cascade: the landing page's rules read the
-// tokens and override the few shell rules that were written for the shorter
-// page at the same address.
+// The tokens and the shell first, then the faces they name from the one URL
+// every page on the domain shares, and the brand's tokens again at the
+// version this site depends on, which adds the fallback faces the shell's
+// copy predates. Then this site's own pages. Order matters for the cascade:
+// the landing page's rules read the tokens and override the few shell rules
+// that were written for the shorter page at the same address.
 import '@aleph-garden/host-core/style.css'
-import '@aleph-garden/brand/fonts.css'
+import '@aleph-garden/brand/fonts-aleph-garden.css'
+import '@aleph-garden/brand/tokens.css'
 import '@aleph-garden/starlight-theme/footer.css'
 import './landing.css'
 import { boot } from '@aleph-garden/host-core'

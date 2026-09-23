@@ -4,16 +4,17 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "dev:host": "vite host",
-    "build": "vite build host && astro build && cp -R host/dist/. dist/",
+    "fonts": "rm -rf public/fonts && cp -R node_modules/@aleph-garden/brand/fonts public/fonts",
+    "dev": "bun run fonts && astro dev",
+    "dev:host": "bun run fonts && vite host",
+    "build": "bun run fonts && vite build host && astro build && cp -R host/dist/. dist/",
     "preview": "astro preview",
     "check": "astro check",
     "test": "bun test",
     "deploy": "wrangler pages deploy dist --project-name=aleph-garden --branch=main"
   },
   "dependencies": {
-    "@aleph-garden/brand": "0.1.1-dev",
+    "@aleph-garden/brand": "0.1.2-dev",
     "@aleph-garden/host-core": "0.3.0-dev",
     "@aleph-garden/starlight-theme": "workspace:*",
     "@aleph-garden/terms": "0.3.0-dev",
