@@ -59,7 +59,10 @@ const FIXTURE_TYPES = {
 }
 
 // Each document has one representation and no HTML one, so a browser gets it
-// as text/plain and reads it rather than downloading it.
+// as text/plain and reads it rather than downloading it. The answer depends on
+// Accept, and Vary says so: without it a browser that fetched the document as
+// text/csv for the page reuses that response when the reader opens the link,
+// and offers it as a download.
 function typed(doc, request, contentType) {
   const accept = request.headers.get('accept') ?? ''
   const html = accept.includes('text/html') && !accept.includes(contentType)
@@ -68,6 +71,7 @@ function typed(doc, request, contentType) {
     'content-type',
     html ? 'text/plain; charset=utf-8' : `${contentType}; charset=utf-8`
   )
+  response.headers.append('vary', 'Accept')
   return response
 }
 
