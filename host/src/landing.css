@@ -96,10 +96,6 @@
   line-height: var(--ag-leading-h3);
   text-wrap: pretty;
 }
-.intro .byline {
-  margin: 0;
-  color: var(--ag-text-muted);
-}
 
 /* --- the projects, under the intro --- */
 
@@ -159,6 +155,29 @@
   margin-top: var(--ag-space-1);
   font-size: var(--ag-type-ui);
   line-height: var(--ag-leading-ui);
+}
+
+/* The private projects: named under a fold, one size down from the list
+   above and muted, with no link and no label. */
+.bench {
+  margin-top: var(--ag-space-5);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-xs);
+  color: var(--ag-text-muted);
+}
+.bench summary {
+  cursor: pointer;
+}
+.bench ul {
+  margin: var(--ag-space-2) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.bench li + li {
+  margin-top: var(--ag-space-1);
+}
+.bench-name {
+  font-weight: 600;
 }
 
 /* --- the content column --- */
@@ -288,7 +307,7 @@
 .trip[data-folded] > .trip-summary {
   display: block;
 }
-.trip[data-folded] > :is(.trip-files, .trip-rules, .trip-caption) {
+.trip[data-folded] > :is(.trip-files, .trip-rules) {
   display: none;
 }
 .trip-fold {
@@ -644,10 +663,7 @@ img.trip-initials {
   line-height: var(--ag-leading-ui);
   cursor: pointer;
 }
-.trip-rule[disabled] {
-  cursor: default;
-}
-.trip-rule:not([disabled]):hover {
+.trip-rule:hover {
   background: var(--ag-sunken);
 }
 .trip-rule:focus-visible {
@@ -692,15 +708,6 @@ img.trip-initials {
 }
 .trip-rule[aria-pressed='true'] .trip-state {
   color: var(--ag-accent-hover);
-}
-.content .trip-caption {
-  margin: 0;
-  color: var(--ag-text-muted);
-  font-size: var(--ag-type-ui);
-  line-height: var(--ag-leading-ui);
-}
-.trip-caption code {
-  color: var(--ag-text);
 }
 
 /* --- the lockup --- */
@@ -881,34 +888,6 @@ img.trip-initials {
   line-height: var(--ag-leading-sm);
 }
 
-/* The two people one above the other, each in its own frame. Side by side,
-   a frame is too narrow for its corners: host-core caps a corner at 55% of
-   the frame, and a host name or a list of types runs past that. */
-.people {
-  display: grid;
-  gap: var(--ag-space-4);
-}
-.people-source {
-  color: inherit;
-  text-decoration: none;
-}
-.people-source:hover,
-.people-source:focus-visible {
-  text-decoration: underline;
-}
-
-.artefact figcaption {
-  margin: var(--ag-space-3) 0 0;
-  font-size: var(--ag-type-xs);
-  line-height: var(--ag-leading-xs);
-  color: var(--ag-text-muted);
-}
-.artefact figcaption code {
-  font-family: var(--ag-font-mono);
-  font-size: 1em;
-  overflow-wrap: anywhere;
-}
-
 /* The word carries the label and the colour repeats it, so the badge still
    reads with no stylesheet and with no colour vision. */
 .badge {
@@ -944,6 +923,17 @@ img.trip-initials {
   color: var(--ag-text-muted);
 }
 
+.content h3 {
+  margin: var(--ag-space-6) 0 var(--ag-space-2);
+}
+.content .status {
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+  color: var(--ag-text-muted);
+}
+.next li + li {
+  margin-top: var(--ag-space-3);
+}
 
 /* --- narrow --- */
 
@@ -963,4 +953,44 @@ img.trip-initials {
   .layout {
     padding: var(--ag-space-7) var(--ag-space-5);
   }
+}
+
+/* The code of a view, as it compiles and as the build highlighted it. The
+   box is the page's own; each token carries a colour per ground, picked by
+   the same three-tier resolution as the wordmark. */
+.content .example pre {
+  margin: 0 0 var(--ag-space-4);
+  padding: var(--ag-space-4);
+  overflow-x: auto;
+  border: var(--ag-stroke-hair) solid var(--ag-border);
+  border-radius: var(--ag-radius-1);
+  background: var(--ag-sunken) !important;
+  font-family: var(--ag-font-mono);
+  font-size: var(--ag-type-xs);
+  line-height: var(--ag-leading-ui);
+}
+.content .example code {
+  font-size: 1em;
+  overflow-wrap: normal;
+}
+.content .example span {
+  color: var(--shiki-light);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-ag-theme='light']):not(.theme-light) .content .example span {
+    color: var(--shiki-dark);
+  }
+}
+[data-ag-theme='dark'] .content .example span,
+.theme-dark .content .example span {
+  color: var(--shiki-dark);
+}
+
+/* The limits under the statement: small and muted, where a reader sees them
+   before deciding to scroll. */
+.intro .limits {
+  margin: 0;
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+  color: var(--ag-text-muted);
 }

@@ -1,14 +1,13 @@
 // The page at the host's own IRI, as a view. A rule matched the address, the
 // table named this view, and what it returns is the page: there is no template
 // and no document behind it. The copy says so because it is true, and the
-// two people on the page are drawn by the same pipeline rather than pasted in:
-// each is a transcluded child with a life of its own.
+// folder in the hero is drawn by the same pipeline rather than pasted in: it is
+// a transcluded child with a life of its own.
 //
 // Everything else, including the styling in ./landing.css, is this page.
 
 import { escapeHtml, type View } from '@aleph-garden/vitrine'
 import projects from '../../public/projects.json'
-import { WEBID_FRAME } from './people.ts'
 import { FOLDER_FRAME, tripFolder } from './trip/index.ts'
 import { footer } from '@aleph-garden/starlight-theme/footer'
 import { installTheme } from '@aleph-garden/starlight-theme/theme'
@@ -20,21 +19,23 @@ import shortLight from '@aleph-garden/brand/lockups/lockup-horizontal-short-ligh
 export const LANDING_VIEW = 'https://aleph.garden/views/landing'
 
 /** What the build prepares for the page: the field behind the opening, which
- *  the ambient view drew from the vocabulary. */
-export type Sources = { ambient: string }
+ *  the ambient view drew from the vocabulary, and the example views as
+ *  highlighted HTML, from a module the type check compiles like any other. */
+export type Sources = { ambient: string; views: string }
 
 /** One entry of `public/projects.json`, the list the landing and the docs
  *  header's project switcher both read. `docs` is absent for a project
  *  without documentation. */
 export type Project = { name: string; line: string; docs?: string; source: string }
 
-/** Two WebID profiles on two servers this deployment does not run: a static
- *  file and a Solid pod. Each is fetched when the page loads and drawn by
- *  whichever view the rules pick for the person it describes. */
-export const PEOPLE = [
-  { document: 'https://toph.so/profile', fragment: 'me' },
-  { document: 'https://timbl.solidcommunity.net/profile/card', fragment: 'me' }
-] as const
+/** The lab's private projects. The page names them under a fold and gives
+ *  them neither a link nor a label, since a stranger can check neither. */
+const BENCH: { name: string; line: string }[] = [
+  { name: 'Ingest', line: 'scheduled flows that bring my messages, documents, places, coding and screen time into my pod' },
+  { name: 'Marginalia', line: 'a Markdown note becomes a graph of its structure, and a query you can swap decides what it means' },
+  { name: 'Memory Garden', line: 'spaced review over any concept hierarchy stored in a pod' },
+  { name: 'Memex', line: 'search and a daily dashboard over what the ingest brings in' }
+]
 
 /** One of the six labels in planning/research/narrative-and-voice.md section
  *  5. Each carries a test a stranger can apply without asking, and the badge's
@@ -45,8 +46,8 @@ type Label = 'Running' | 'Buildable' | 'Prototype' | 'Specified' | 'Note' | 'Par
  *  its source repository. A project without an entry shows no badge. */
 const STATUS: Record<string, { label: Label; evidence: string }> = {
   'https://github.com/aleph-garden/vitrine': {
-    label: 'Buildable',
-    evidence: 'README commands and a docs site. Not yet run from a clean checkout.'
+    label: 'Running',
+    evidence: 'Draws this page on aleph.garden, 2026-09-24. On npm at 0.3.2-dev. Not yet run from a clean checkout.'
   },
   'https://github.com/aleph-garden/quadpod': {
     label: 'Prototype',
@@ -57,19 +58,26 @@ const STATUS: Record<string, { label: Label; evidence: string }> = {
 const link = (href: string, text: string) =>
   `<a href="${escapeHtml(href)}" target="_top">${escapeHtml(text)}</a>`
 
+const badge = (label: Label, evidence?: string) =>
+  `<span class="badge badge-${label.toLowerCase()}"${evidence ? ` title="${escapeHtml(evidence)}"` : ''}>${escapeHtml(label)}</span>`
+
 function projectEntry(project: Project): string {
   const home = project.docs ?? project.source
   const ways = [project.docs && link(project.docs, 'Docs'), link(project.source, 'Source')].filter(Boolean)
   const status = STATUS[project.source]
-  const badge = status
-    ? `<span class="badge badge-${status.label.toLowerCase()}" title="${escapeHtml(status.evidence)}">${escapeHtml(status.label)}</span>`
-    : ''
   return `<li class="project">
-            <span class="project-head"><a class="project-name" href="${escapeHtml(home)}" target="_top">${escapeHtml(project.name)} &rarr;</a>${badge}</span>
+            <span class="project-head"><a class="project-name" href="${escapeHtml(home)}" target="_top">${escapeHtml(project.name)} &rarr;</a>${status ? badge(status.label, status.evidence) : ''}</span>
             <span class="project-line">${escapeHtml(project.line)}</span>
             <span class="project-ways">${ways.join('')}</span>
           </li>`
 }
+
+const bench = () => `<details class="bench">
+              <summary>Also in the lab, private until mature enough</summary>
+              <ul>
+                ${BENCH.map((p) => `<li><span class="bench-name">${escapeHtml(p.name)}</span>: ${escapeHtml(p.line)}</li>`).join('\n                ')}
+              </ul>
+            </details>`
 
 /** Both lockups sit in the markup and the stylesheet shows the one for the
  *  current ground. */
@@ -90,7 +98,7 @@ const siteFooter = footer({
   }
 })
 
-function page(sources: Sources, hero: string, people: string[]): string {
+function page(sources: Sources, hero: string): string {
   return `<div class="landing">
     <div class="page">
       <div class="opening">
@@ -98,13 +106,14 @@ function page(sources: Sources, hero: string, people: string[]): string {
         <div class="layout">
           <header class="intro">
             <h1 class="wordmark">${lockup('full', 'Aleph Garden')}</h1>
-            <p class="statement">Aleph Garden is my lab for personal data. The mechanism it keeps coming back to: a resource has an address, a table of rules picks the code that draws it, and you replace that code without building an application around it.</p>
-            <p class="byline">by ${link('https://github.com/tophcodes', 'Christopher Mühl')}</p>
+            <p class="statement">Aleph Garden is my lab for code written for a kind of data instead of for one app&rsquo;s copy of it. Its main piece is Vitrine, a TypeScript library that takes an address and picks the view that draws it, by the file&rsquo;s type or by what its data says it is. It draws this page.</p>
+            <p class="limits">Today it reads public files and writes nothing. It is before 1.0, and one person works on it.</p>
             <nav class="projects" aria-labelledby="projects-heading">
               <h2 id="projects-heading">Projects</h2>
               <ul>
           ${(projects as Project[]).map(projectEntry).join('\n          ')}
               </ul>
+            ${bench()}
             </nav>
           </header>
 
@@ -115,40 +124,42 @@ function page(sources: Sources, hero: string, people: string[]): string {
             </section>
 
             <section>
-              <h2>The case it started from</h2>
-              <p>A historical event is a time, a place and a set of people at once. Showing it well means a timeline, a map and a card per person, drawn from the data rather than from a page someone wrote by hand. The event is in a graph, the people are in a graph, and the vocabularies are standard and a decade old. Nothing<button type="button" class="footnote-ref" popovertarget="footnote-nothing" aria-label="Footnote 1">1</button> renders that today.</p>
-              <p class="footnote" id="footnote-nothing" popover>Nothing that I know of.</p>
+              <h2>A view, in full</h2>
+              <p>The first view is picked for every CSV file and uses no RDF. The second is picked for anything that says it is a person.</p>
+              <div class="example">${sources.views}</div>
+              <p><code>render</code> returns HTML. The page that embeds Vitrine can set rules of its own over a view&rsquo;s <code>when</code>, and ${link('/vitrine/docs/', 'the docs')} have the rest.</p>
             </section>
 
             <section>
-              <h2>Why there are so few renderers</h2>
-              <p>To show one kind of thing on the web you build an application: fetching, authentication, routing, layout, state, a deployment. The renderer is the small part and the frame around it is the work. So a few applications exist per domain, each shaped by the requirements of whoever built it, and each one is a silo of a second kind. The data may be yours; the way you see it belongs to them.</p>
-            </section>
-
-            <section>
-              <h2>The mechanism</h2>
-              <p>A resource has an address. A table of rules maps that address to a view, and a view is a function that takes the resource and returns HTML. Rules match on the content type, on the type, on the address itself, or on whether the resource is a container. A text file, a spreadsheet and a note go through the same table.</p>
-              <p>With that in place the frame stops being the work. An application keeps its shell, its session and its navigation, and you replace the one part that bothers you. Your replacement then applies everywhere a resource of that kind is opened, because the rule table decides.</p>
-              <p>A view that meets something it does not understand hands it back to the table. An event view shows a person without ever learning what a person view is, and the person keeps its own region, its own updates and its own links. Over addresses this crosses machines too, so a child can live on a server neither of us runs.</p>
+              <h2>What I am working toward</h2>
+              <p>Knowledge drawn the way each reader prefers. The same concepts can be a map to walk, a timeline or cards to review, and which of them helps depends on the reader. The rules pick the view, so a reader&rsquo;s preferences can be rules too: one reader gets the map, another the cards, from the same data.</p>
+              <p>For that, everything that is code today becomes data. A view gets its own address, and what is published there names the view&rsquo;s code, what it can draw and the rules it answers to. A reader keeps a list of the views they accept and their preferences among them, and any page that draws for them reads both. The same rules then reach past drawing: they can decide how a mail or a chat message becomes records when it comes in, and what a server keeps from a scanned letter it stores. Running a view from someone else&rsquo;s address means running their code on my data, and ${link('/vitrine/docs/design/sandboxing/', 'the sandboxing notes')} are where that stands.</p>
+              <p class="status">Views that adapt to a reader, views and rules as data: to build.</p>
+              <p>Along the way the same rules make smaller things possible:</p>
+              <ul class="next">
+                <li><strong>Spaced review over any hierarchy of concepts.</strong> Memory Garden schedules it. ${badge('Prototype')}, private.</li>
+                <li><strong>A timeline across tools that never heard of each other.</strong> One query finds everything with a <code>schema:startDate</code>, and each result goes to whatever view the rules pick for it. Coding time, screen time and places would share one timeline with no code in the timeline for any of them, because each source&rsquo;s mapping writes the <code>schema:startDate</code> when its data comes in.</li>
+              </ul>
             </section>
 
             <section>
               <h2>The substrate</h2>
-              <p>The addresses are IRIs, and where the data has structure it is RDF. That lets a rule say &ldquo;anything of this type&rdquo; and have the type mean the same thing in my store and in yours, and it lets a view someone else published apply to my data with no schema negotiated between us.</p>
-              <p>Which store holds it stays open: a Solid pod, a directory of files, or a CRDT-backed graph. The renderer knows no server, no protocol and no RDF library of its own. A host fetches, the renderer draws.</p>
-              <figure class="artefact">
-                <div class="people">
-                  ${people.join('')}
-                </div>
-                <figcaption>Two WebID profiles, fetched from their own servers when this page loads: a static file on <code>toph.so</code> and a Solid pod on <code>solidcommunity.net</code>. They describe their person with different properties, and both declare the type <code>foaf:Person</code>. One rule sends that type to <code>person-card</code>, which draws both.</figcaption>
-              </figure>
+              <p>The addresses are IRIs, and where the data has structure it is RDF. That lets a rule say &ldquo;anything of this type&rdquo;. Two sources still have to pick the same vocabulary, and one like schema.org or FOAF is public and older than either of them, so that agreement costs less than agreeing on one app's format. A view still has to cope with how differently two sources fill it in. The rule <code>type schema:Person</code> in the folder above is one of those rules: it switches both people at once, whatever file they sit in.</p>
+              <p>Which store holds the data stays open: a Solid pod, a directory of files, or a CRDT-backed graph. Vitrine parses nothing itself. The page it runs in does the fetching and plugs in a parser for Turtle or JSON-LD.</p>
             </section>
 
             <section>
-              <h2>Where this is heading</h2>
-              <p>Personal data is what the lab is about. I built the renderer first, because every other piece needs one to show anything.</p>
-              <p>Transclusion is <strong>built</strong>: each card above is a child the runtime mounted, with its own region (${link('/vitrine/docs/reference/transclusion/', 'the reference')}). Writing is <strong>specified and unbuilt</strong>: one more call on the context, the change shaped as an ActivityStreams activity, the host doing the transport (${link('https://github.com/aleph-garden/vitrine/blob/main/docs/drafts/write.md', 'write.md')}).</p>
-              <p>Syncing is <strong>designed and unbuilt</strong>: convergence in the client with Automerge, the synced bytes landing in a Solid container. I found no Automerge adapter over a Solid pod anywhere, so I treat it as an experiment. Today Vitrine reads and never writes.</p>
+              <h2>Where this sits</h2>
+              <p>${link('https://github.com/SolidOS/solidos', 'SolidOS')}, ${link('https://github.com/ali1k/ld-r', 'LD-R')}, ${link('https://github.com/TopQuadrant/shacl/blob/master/src/main/resources/rdf/dash.ttl', 'DASH')} and ${link('https://www.w3.org/2005/04/fresnel-info/', 'Fresnel')} choose views from data too, and they are further along. Each does it inside its own stack and for RDF: the Solid data browser, a React app over a SPARQL endpoint, SHACL forms. The lab tries it with no stack assumed and for any file, and wants the choice to end with the reader. Outside RDF the nearest is ${link('https://www.inkandswitch.com/patchwork/notebook/', 'Patchwork')}, which picks a tool for each kind of document inside one environment, and ${link('https://www.inkandswitch.com/cambria/', 'Cambria')}&rsquo;s small lenses between schemas are the model for how data comes in.</p>
+            </section>
+
+            <section>
+              <h2>What you could build next week</h2>
+              <ul class="next">
+                <li><strong>Open your own file through this site.</strong> Put a Markdown, Turtle or JSON-LD file at a public address that allows cross-origin reads and sends the right content type, then open it behind <code>https://aleph.garden/-/</code>, as in ${link('https://aleph.garden/-/https://toph.so/profile#me', 'aleph.garden/-/https://toph.so/profile#me')}. Raw GitHub sends every file as plain text, so a Markdown file from there draws as plain text. A folder on a Solid pod opens as a list of its files. Addresses with a query string do not open yet, and only public files open here.</li>
+                <li><strong>Write a view for your own kind of document.</strong> Start from the example above. The library is on npm as <code>@aleph-garden/vitrine</code>, and until 1.0 you follow its breaking changes by hand.</li>
+              </ul>
+              <p>What is missing: Vitrine reads and never writes. Writing is specified and unbuilt (${link('https://github.com/aleph-garden/vitrine/blob/main/docs/drafts/write.md', 'write.md')}). Logging in to a pod works against my own development pod and has no written contract yet. If one of these looks like yours, write to me at ${link('mailto:toph@aleph.garden', 'toph@aleph.garden')}.</p>
             </section>
           </div>
         </div>
@@ -171,12 +182,9 @@ export function landingView(origin: string, sources: Sources): View {
       // What `transclude` answers goes into the string verbatim: a placeholder
       // the runtime mounts a child into, or the child itself on a host that
       // renders ahead of time.
-      const [hero, ...people] = await Promise.all([
-        ctx.transclude(tripFolder(origin), { view: FOLDER_FRAME }),
-        ...PEOPLE.map(({ document, fragment }) => ctx.transclude(document, { fragment, view: WEBID_FRAME }))
-      ])
+      const hero = await ctx.transclude(tripFolder(origin), { view: FOLDER_FRAME })
       return {
-        html: page(sources, hero, people),
+        html: page(sources, hero),
         hydrate: (root) => {
           const stop = installTheme(root)
           return { dispose: stop }

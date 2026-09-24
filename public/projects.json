@@ -6,8 +6,8 @@
     "source": "https://github.com/aleph-garden/vitrine"
   },
   {
-    "name": "quadpod",
-    "line": "A Solid pod whose storage is one quad store.",
+    "name": "Quadpod",
+    "line": "A Solid server that keeps all its structured data in one store, so a query could span all of it. It has no query endpoint yet.",
     "docs": "/quadpod/docs/",
     "source": "https://github.com/aleph-garden/quadpod"
   }

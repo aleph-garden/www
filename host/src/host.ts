@@ -11,7 +11,6 @@ import { parseTurtle, turtleParser } from '@aleph-garden/vitrine-turtle'
 import { gardenAddress } from './address.ts'
 import { graphView } from './graph.ts'
 import { landingView, type Sources } from './landing.ts'
-import { webIdFrame } from './people.ts'
 import { tripViews } from './trip/index.ts'
 import { cardView, foaf } from './trip/views.ts'
 
@@ -26,11 +25,10 @@ export const gardenHost = (sources: Sources): Host => ({
   views: () => [
     landingView(location.origin, sources),
     ...tripViews(location.origin),
-    // The landing page's two WebIDs. The hero's people are schema:Person and
-    // reach the card through the folder's own table; this rule applies
-    // anywhere.
+    // A WebID profile opened through the address. The hero's people are
+    // schema:Person and reach the card through the folder's own table; this
+    // rule applies anywhere.
     { ...cardView, when: [{ type: foaf.Person }] },
-    webIdFrame,
     graphView,
     folderView,
     fileRowView,

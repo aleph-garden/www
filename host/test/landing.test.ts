@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
 import { type Context, createRenderer, fallbackView, type Resource } from '@aleph-garden/vitrine'
 import projects from '../../public/projects.json'
-import { LANDING_VIEW, landingView, PEOPLE } from '../src/landing.ts'
+import { LANDING_VIEW, landingView } from '../src/landing.ts'
 
-const SOURCES = { ambient: '<svg class="ambient" aria-hidden="true"></svg>' }
+const SOURCES = { ambient: '<svg class="ambient" aria-hidden="true"></svg>', views: '<pre class="shiki"><code>const view = 1</code></pre>' }
 const landing = landingView('https://pod.example', SOURCES)
 
 /** A context that records what the view asked to transclude and hands back a
@@ -48,7 +48,7 @@ describe('landingView', () => {
     // The heading is the lockup, whose alternative text is the page's name.
     expect(rendered.html).toContain('<h1 class="wordmark">')
     expect(rendered.html).toContain('alt="Aleph Garden"')
-    for (const heading of ['The case it started from', 'Why there are so few renderers', 'The mechanism', 'The substrate', 'Where this is heading']) {
+    for (const heading of ['A view, in full', 'What I am working toward', 'The substrate', 'Where this sits', 'What you could build next week']) {
       expect(rendered.html).toContain(`<h2>${heading}</h2>`)
     }
   })
@@ -58,10 +58,10 @@ describe('landingView', () => {
     expect(rendered.html).toContain('<p class="hero-note">A demo:')
   })
 
-  test('draws the hero as the trip folder in its frame, and the two WebIDs', async () => {
+  test('draws the hero as the trip folder in its frame', async () => {
     const { ctx, asked } = recording()
     const rendered = await landing.render(resource('https://pod.example/'), ctx)
-    expect(asked).toEqual(['https://pod.example/fixtures/trip/', ...PEOPLE.map((p) => p.document)])
+    expect(asked).toEqual(['https://pod.example/fixtures/trip/'])
     expect(rendered.html).toContain(
       '<div data-aleph-transclude="https://pod.example/fixtures/trip/"></div>'
     )
@@ -78,9 +78,22 @@ describe('landingView', () => {
 
   test('labels the projects that have earned one, with the evidence as its title', async () => {
     const rendered = await landing.render(resource('https://pod.example/'), noop)
-    expect(rendered.html).toContain('<span class="badge badge-buildable" title="README commands')
+    expect(rendered.html).toContain('<span class="badge badge-running" title="Draws this page')
     expect(rendered.html).toContain('<span class="badge badge-prototype" title="Well before a release')
     expect(rendered.html).not.toContain('What is in the lab')
+  })
+
+  test('shows the example views as the build highlighted them', async () => {
+    const rendered = await landing.render(resource('https://pod.example/'), noop)
+    expect(rendered.html).toContain('<div class="example"><pre class="shiki"><code>const view = 1</code></pre></div>')
+  })
+
+  test('names the private projects under a fold, without links or labels', async () => {
+    const rendered = await landing.render(resource('https://pod.example/'), noop)
+    const fold = rendered.html.slice(rendered.html.indexOf('<details class="bench">'), rendered.html.indexOf('</details>'))
+    for (const name of ['Ingest', 'Marginalia', 'Memory Garden', 'Memex']) expect(fold).toContain(`>${name}</span>`)
+    expect(fold).not.toContain('href=')
+    expect(fold).not.toContain('badge')
   })
 
   test('keeps projects out of the footer', async () => {

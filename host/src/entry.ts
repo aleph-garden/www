@@ -11,6 +11,7 @@ import '@aleph-garden/starlight-theme/footer.css'
 import './landing.css'
 import { boot } from '@aleph-garden/host-core'
 import ambientSource from '../../public/ns/vitrine?ambient'
+import exampleViews from './example-views.ts?highlight'
 import { gardenHost } from './host.ts'
 
 /** host-core installs its own chrome on every boot, and that chrome is the
@@ -32,6 +33,6 @@ function unusedChrome(): Element {
   return frame
 }
 
-const sources = { ambient: ambientSource }
+const sources = { ambient: ambientSource, views: exampleViews }
 
 void boot(gardenHost(sources), unusedChrome(), document.getElementById('root')!)
