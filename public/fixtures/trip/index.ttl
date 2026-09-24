@@ -1,4 +1,16 @@
 @prefix ldp: <http://www.w3.org/ns/ldp#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix stat: <http://www.w3.org/ns/posix/stat#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+# What a Solid server states about its members in the container itself: when
+# each changed and how many bytes it holds.
 
 <> a ldp:Container, ldp:BasicContainer ;
     ldp:contains <packing.txt>, <budget.csv>, <route.geojson>, <notes.md>, <people.ttl> .
+
+<packing.txt> dcterms:modified "2026-09-21T18:40:00Z"^^xsd:dateTime ; stat:size 57 .
+<budget.csv> dcterms:modified "2026-09-19T09:12:00Z"^^xsd:dateTime ; stat:size 50 .
+<route.geojson> dcterms:modified "2026-09-24T10:05:00Z"^^xsd:dateTime ; stat:size 3267 .
+<notes.md> dcterms:modified "2026-09-17T21:30:00Z"^^xsd:dateTime ; stat:size 120 .
+<people.ttl> dcterms:modified "2026-09-20T14:02:00Z"^^xsd:dateTime ; stat:size 247 .
