@@ -73,10 +73,6 @@
   outline: 2px solid var(--ag-focus);
   outline-offset: 2px;
 }
-.ag-footer .ag-placeholder {
-  font-family: var(--ag-font-mono);
-  color: var(--ag-text-muted);
-}
 .ag-footer .ag-footer-meta {
   color: var(--ag-text-muted);
 }

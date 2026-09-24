@@ -26,7 +26,7 @@ export function footer({ lockup, source, lastEdited }) {
     <div class="ag-footer-grid">
       <div class="ag-footer-lab">
         <a class="ag-footer-mark" href="https://aleph.garden/" target="_top" aria-label="Aleph Garden, home"><img class="ag-on-light" src="${escape(lockup.light)}" alt="" /><img class="ag-on-dark" src="${escape(lockup.dark)}" alt="" /></a>
-        <p>A lab by ${link('https://github.com/tophcodes', 'Christopher Mühl')}, worked on in the open.</p>
+        <p>A one-person lab by ${link('https://toph.so/', 'Christopher Mühl')}.</p>
       </div>
       <div class="ag-footer-col">
         <span class="ag-footer-head">Source</span>
@@ -34,8 +34,7 @@ export function footer({ lockup, source, lastEdited }) {
       </div>
       <div class="ag-footer-col">
         <span class="ag-footer-head">Contact</span>
-        ${link('https://github.com/tophcodes', 'GitHub')}
-        <span class="ag-placeholder">[Impressum]</span>
+        ${link('mailto:toph@aleph.garden', 'toph@aleph.garden')}
       </div>
     </div>
     <div class="ag-footer-base">
