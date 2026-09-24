@@ -168,37 +168,14 @@ const TABLE: Kind[] = [...FILES, 'person']
 
 function ruleRow(kind: Kind): string {
   const row = rowsOf().find((r) => r.kind === kind)
-  if (!row) return ''
-  const [first, second] = row.views
+  const [first, second] = row?.views ?? []
+  // A row with one view has nothing to switch, so the demo leaves it out.
+  if (!row || !first || !second) return ''
   const flipped = isFlipped(kind)
   const on = (view: View) => (picked(row).id === view.id ? ' data-on' : '')
-  const alt = second
-    ? `<span class="trip-swap" aria-hidden="true">⇄</span><span class="trip-view"${on(second)}>${escapeHtml(shortName(second.id))}</span>`
-    : ''
-  const state = second ? (flipped ? 'switched' : '') : 'fixed'
-  return `<li><button type="button" class="trip-rule" data-kind="${kind}"${second ? '' : ' disabled'} aria-pressed="${flipped}"><span class="trip-cond">${escapeHtml(row.label)}</span><span class="trip-views"><span aria-hidden="true">→</span><span class="trip-view"${on(first)}>${escapeHtml(shortName(first.id))}</span>${alt}</span><span class="trip-state">${state}</span></button></li>`
-}
-
-const pickedFor = (kind: Kind) => {
-  const row = rowsOf().find((r) => r.kind === kind)
-  return row ? `<code>${escapeHtml(shortName(picked(row).id))}</code>` : undefined
-}
-
-/** One sentence naming the view the rules picked for each file, and for each
- *  person inside the graph. A file switched in its own corner is drawn by its
- *  own choice, which this does not know: the listing sees its files, never
- *  what they became. */
-function caption(files: { iri: string; kind?: Kind }[]): string {
-  const parts = files.flatMap(({ iri, kind }) => {
-    const view = kind && pickedFor(kind)
-    const file = iri.split('/').pop() ?? iri
-    return view ? [`${view} for ${escapeHtml(file)}`] : []
-  })
-  const person = files.some((f) => f.kind === 'graph') && pickedFor('person')
-  if (person) parts.push(`${person} for each schema:Person in it`)
-  if (!parts.length) return ''
-  const list = parts.length > 1 ? `${parts.slice(0, -1).join(', ')} and ${parts.at(-1)}` : parts[0]
-  return `The rules picked ${list}.`
+  const alt = `<span class="trip-swap" aria-hidden="true">⇄</span><span class="trip-view"${on(second)}>${escapeHtml(shortName(second.id))}</span>`
+  const state = flipped ? 'switched' : ''
+  return `<li><button type="button" class="trip-rule" data-kind="${kind}" aria-pressed="${flipped}"><span class="trip-cond">${escapeHtml(row.label)}</span><span class="trip-views"><span aria-hidden="true">→</span><span class="trip-view"${on(first)}>${escapeHtml(shortName(first.id))}</span>${alt}</span><span class="trip-state">${state}</span></button></li>`
 }
 
 /** The one line a folded folder shows: how many files, and their names. */
@@ -239,7 +216,7 @@ export function listingView(folder: string): View {
       const table = TABLE.map(ruleRow).join('')
       const version = ctx.state('table', 0)
       return {
-        html: `<div class="trip" id="${BODY_ID}"><p class="trip-summary">${summary(files)}</p><div class="trip-files">${cells.join('')}</div><div class="trip-rules"><p class="trip-rules-head"><span>Rules</span><span>These apply inside this folder. A row with ⇄ is a switch: when I click it, everything it matches redraws.</span></p><ul>${table}</ul></div><p class="trip-caption">${caption(files.map((iri) => ({ iri, kind: kindByName(iri) })))}</p></div>`,
+        html: `<div class="trip" id="${BODY_ID}"><p class="trip-summary">${summary(files)}</p><div class="trip-files">${cells.join('')}</div><div class="trip-rules"><p class="trip-rules-head"><span>Rules</span></p><ul>${table}</ul></div></div>`,
         hydrate(root, hydrating) {
           const handles = inline.map((drawn, i) => {
             const at = root.querySelector(`.trip-inline[data-inline="${i}"]`)
@@ -248,7 +225,7 @@ export function listingView(folder: string): View {
           const click = (event: Event) => {
             const button = (event.target as Element | null)?.closest<HTMLElement>('.trip-rule')
             const kind = button?.dataset.kind as Kind | undefined
-            if (!kind || button?.hasAttribute('disabled')) return
+            if (!kind) return
             flip(kind)
             version.set(version.get() + 1)
           }

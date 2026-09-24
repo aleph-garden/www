@@ -191,7 +191,7 @@ describe('the rule table', () => {
 })
 
 describe('the listing', () => {
-  test('frames each file, the graph last and drawn in place, and draws the table and the caption', async () => {
+  test('frames each file, the graph last and drawn in place, and draws the rules that switch', async () => {
     const parsed = await renderer.parse(LISTING)
     expect(renderer.select(parsed)?.id).toBe(LISTING_VIEW)
     const drawn = await renderer.render(parsed, context(resolveFiles))
@@ -206,8 +206,7 @@ describe('the listing', () => {
     expect(drawn.html).toContain('class="trip-inline"')
     expect(drawn.html).toContain(`data-view="${FILE_FRAME}"`)
     expect(drawn.html).toContain('class="trip-rule" data-kind="csv"')
-    expect(drawn.html).toContain('The rules picked <code>checklist</code> for packing.txt')
-    expect(drawn.html).toContain('<code>subjects-grid</code> for people.ttl and <code>person-card</code> for each schema:Person in it.')
+    expect(drawn.html).not.toContain('class="trip-rule" data-kind="md"')
     expect(drawn.html).toContain('class="trip-rule" data-kind="person"')
   })
 })
