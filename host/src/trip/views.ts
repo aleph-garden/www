@@ -5,7 +5,7 @@
 // three kinds of line its one note uses.
 
 import { about, escapeHtml, type Resource, type View } from '@aleph-garden/vitrine'
-import { rdf, schema } from '@aleph-garden/terms'
+import { ns, rdf, schema } from '@aleph-garden/terms'
 import { contentOf } from '../graph.ts'
 
 const VIEWS = 'https://aleph.garden/views/'
@@ -134,35 +134,66 @@ export function lineOf(body: string): Point[] {
 const WIDTH = 280
 const HEIGHT = 150
 const PAD = 12
+const TILE = 256
+const MAX_ZOOM = 18
 
-/** The points in the box, longitude scaled by the cosine of the mean
- *  latitude so a short walk keeps its shape. Good for a city; a route that
- *  crosses a continent would need a real projection. */
-export function project(points: Point[]): [number, number][] {
-  if (!points.length) return []
-  const lats = points.map((p) => p[1])
-  const cos = Math.cos((((Math.min(...lats) + Math.max(...lats)) / 2) * Math.PI) / 180)
-  const xs = points.map((p) => p[0] * cos)
-  const [x0, x1] = [Math.min(...xs), Math.max(...xs)]
-  const [y0, y1] = [Math.min(...lats), Math.max(...lats)]
-  const scale = Math.min((WIDTH - 2 * PAD) / (x1 - x0 || 1), (HEIGHT - 2 * PAD) / (y1 - y0 || 1))
-  const dx = (WIDTH - (x1 - x0) * scale) / 2
-  const dy = (HEIGHT - (y1 - y0) * scale) / 2
-  return points.map((p, i) => [
-    Math.round((dx + (xs[i]! - x0) * scale) * 10) / 10,
-    Math.round((dy + (y1 - p[1]) * scale) * 10) / 10
-  ])
+/** A point in Web Mercator pixels at zoom `z`, the space OpenStreetMap's tiles
+ *  are cut in. */
+function mercator([lon, lat]: Point, z: number): [number, number] {
+  const size = TILE * 2 ** z
+  const sin = Math.sin((lat * Math.PI) / 180)
+  return [((lon + 180) / 360) * size, (0.5 - Math.log((1 + sin) / (1 - sin)) / (4 * Math.PI)) * size]
 }
 
+type Tile = { z: number; x: number; y: number; left: number; top: number }
+
+/** The line in the box at the deepest zoom it fits, centred, and the tiles
+ *  that cover the box at that zoom, each placed in box units. */
+export function project(points: Point[]): { points: [number, number][]; tiles: Tile[] } {
+  if (!points.length) return { points: [], tiles: [] }
+  let z = MAX_ZOOM
+  let world = points.map((p) => mercator(p, z))
+  const extent = () => {
+    const xs = world.map((p) => p[0])
+    const ys = world.map((p) => p[1])
+    return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) }
+  }
+  let box = extent()
+  while (z > 0 && (box.x1 - box.x0 > WIDTH - 2 * PAD || box.y1 - box.y0 > HEIGHT - 2 * PAD)) {
+    z -= 1
+    world = points.map((p) => mercator(p, z))
+    box = extent()
+  }
+  const ox = (box.x0 + box.x1) / 2 - WIDTH / 2
+  const oy = (box.y0 + box.y1) / 2 - HEIGHT / 2
+  const tiles: Tile[] = []
+  for (let x = Math.floor(ox / TILE); x <= Math.floor((ox + WIDTH) / TILE); x++)
+    for (let y = Math.floor(oy / TILE); y <= Math.floor((oy + HEIGHT) / TILE); y++)
+      tiles.push({ z, x, y, left: Math.round((x * TILE - ox) * 10) / 10, top: Math.round((y * TILE - oy) * 10) / 10 })
+  return {
+    points: world.map(([x, y]) => [Math.round((x - ox) * 10) / 10, Math.round((y - oy) * 10) / 10]),
+    tiles
+  }
+}
+
+const OSM_TILES = 'https://tile.openstreetmap.org'
+
+/** The route over OpenStreetMap's tiles, which the reader's browser fetches
+ *  from OpenStreetMap. The tile server's usage policy asks for the
+ *  attribution drawn under the map and allows light use like this; a page
+ *  with real traffic would need its own tile source. */
 export const mapView: View = {
   id: `${VIEWS}map`,
   async render(resource) {
-    const points = project(lineOf(text(resource)))
+    const { points, tiles } = project(lineOf(text(resource)))
     if (!points.length) return { html: '<p class="trip-empty">No line in this file.</p>' }
     const [sx, sy] = points[0]!
     const [ex, ey] = points.at(-1)!
+    const images = tiles
+      .map((t) => `<image class="trip-tile" href="${OSM_TILES}/${t.z}/${t.x}/${t.y}.png" x="${t.left}" y="${t.top}" width="${TILE}" height="${TILE}"></image>`)
+      .join('')
     return {
-      html: `<svg class="trip-map" viewBox="0 0 ${WIDTH} ${HEIGHT}" role="img" aria-label="A walking route of ${points.length} points"><polyline points="${points.map((p) => p.join(',')).join(' ')}"></polyline><circle class="trip-start" cx="${sx}" cy="${sy}" r="3.5"></circle><circle class="trip-end" cx="${ex}" cy="${ey}" r="3.5"></circle></svg>`
+      html: `<div class="trip-mapbox"><svg class="trip-map" viewBox="0 0 ${WIDTH} ${HEIGHT}" role="img" aria-label="A walking route of ${points.length} points"><g class="trip-tiles">${images}</g><polyline points="${points.map((p) => p.join(',')).join(' ')}"></polyline><circle class="trip-start" cx="${sx}" cy="${sy}" r="3.5"></circle><circle class="trip-end" cx="${ex}" cy="${ey}" r="3.5"></circle></svg><a class="trip-osm" href="https://www.openstreetmap.org/copyright" target="_top">© OpenStreetMap contributors</a></div>`
     }
   }
 }
@@ -208,20 +239,28 @@ export const noteView: View = {
 // Each draws one person: the subject the rendering is about. The file that
 // holds them is a graph, which vitrine's subjects view takes apart, embedding
 // every person under its own fragment, where the rule on the type picks one
-// of these.
+// of these. The card also draws a WebID profile, which says the same things
+// in FOAF and vCard, so each field reads the vocabularies in turn.
 
 const SCHEMA = 'https://schema.org/'
 const short = (iri: string) => (iri.startsWith(SCHEMA) ? `schema:${iri.slice(SCHEMA.length)}` : iri)
 
-type Person = { iri: string; name: string; email?: string }
+export const foaf = ns('http://xmlns.com/foaf/0.1/', 'Person', 'name', 'img')
+const vcard = ns('http://www.w3.org/2006/vcard/ns#', 'fn', 'hasPhoto', 'role', 'organization-name')
+
+type Person = { iri: string; name: string; line?: string; photo?: string }
 
 export function personOf(resource: Resource): Person {
   const person = about(resource)
-  const email = person.one(`${SCHEMA}email`)
+  const email = person.one(`${SCHEMA}email`)?.replace(/^mailto:/, '')
+  const role = [person.one(vcard.role), person.one(vcard['organization-name'])].filter(Boolean).join(', ')
+  const photo = person.one(vcard.hasPhoto) ?? person.one(foaf.img) ?? person.one(schema.image)
   return {
     iri: person.iri,
-    name: person.one(schema.name) ?? person.iri,
-    email: email?.replace(/^mailto:/, '')
+    name: person.one(schema.name) ?? person.one(foaf.name) ?? person.one(vcard.fn) ?? person.iri,
+    line: email ?? (role || undefined),
+    // An image from a document on another server: only an https URL is drawn.
+    photo: photo?.startsWith('https://') ? photo : undefined
   }
 }
 
@@ -237,8 +276,11 @@ export const cardView: View = {
   id: `${VIEWS}person-card`,
   async render(resource) {
     const p = personOf(resource)
+    const face = p.photo
+      ? `<img class="trip-initials" src="${escapeHtml(p.photo)}" alt="" loading="lazy" />`
+      : `<span class="trip-initials" aria-hidden="true">${escapeHtml(initials(p.name))}</span>`
     return {
-      html: `<article class="trip-card"><span class="trip-initials" aria-hidden="true">${escapeHtml(initials(p.name))}</span><span class="trip-who"><span class="trip-name">${escapeHtml(p.name)}</span>${p.email ? `<span class="trip-email">${escapeHtml(p.email)}</span>` : ''}</span></article>`
+      html: `<article class="trip-card">${face}<span class="trip-who"><span class="trip-name">${escapeHtml(p.name)}</span>${p.line ? `<span class="trip-email">${escapeHtml(p.line)}</span>` : ''}</span></article>`
     }
   }
 }

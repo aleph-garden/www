@@ -22,11 +22,13 @@
 
 /* --- the layout: the intro stands, the content runs --- */
 
-/* 25rem is the intro column of design 3a and not a token. `clip` on the
+/* 25rem is the intro column of design 3a and not a token. Below the page's
+   full width the intro gives up width first, down to 16rem where the layout
+   turns to one column, so the content keeps a reading width. `clip` on the
    landing is not a scroll container, so the intro can still stick. */
 .layout {
   display: grid;
-  grid-template-columns: 25rem minmax(0, 1fr);
+  grid-template-columns: clamp(16rem, 30%, 25rem) minmax(0, 1fr);
   gap: var(--ag-space-9);
   align-items: start;
   padding: var(--ag-space-9) var(--ag-space-8);
@@ -131,6 +133,14 @@
   padding-top: var(--ag-space-4);
   border-top: var(--ag-stroke-hair) dotted var(--ag-border);
 }
+/* The name and, where the project has earned one, its label on the same
+   line, the label at the far end. */
+.project-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--ag-space-3);
+}
 .project-name {
   font-family: var(--ag-font-display);
   font-weight: 600;
@@ -162,8 +172,13 @@
 .content h2 {
   margin: 0 0 var(--ag-space-5);
 }
+/* As wide as the artefacts between them. host-core sets a prose measure on
+   `.landing p` inside an @scope, which wins a tie on specificity, so this
+   rule names `.landing` too. */
+.landing .content p {
+  max-width: none;
+}
 .content p {
-  max-width: 35rem;
   margin: 0 0 var(--ag-space-4);
   text-wrap: pretty;
 }
@@ -178,8 +193,40 @@
   font-size: 0.94em;
   overflow-wrap: anywhere;
 }
-.content .caveat {
-  color: var(--ag-text-muted);
+
+/* A footnote opens where its mark is, as a popover: a click anywhere else or
+   Escape closes it. Without anchor positioning it opens in the middle of the
+   viewport, where the browser puts a popover by default. */
+.footnote-ref {
+  anchor-name: --footnote;
+  padding: 0 0.15em;
+  border: 0;
+  background: none;
+  color: var(--ag-accent);
+  font: inherit;
+  font-size: 0.7em;
+  /* Raised by offset rather than vertical-align, so the mark keeps a box to
+     click and the line keeps its height. */
+  position: relative;
+  top: -0.6em;
+  line-height: 1;
+  cursor: pointer;
+}
+.footnote-ref:hover,
+.footnote-ref:focus-visible {
+  text-decoration: underline;
+}
+.content .footnote {
+  position-anchor: --footnote;
+  position-area: bottom;
+  position-try-fallbacks: flip-block;
+  max-width: 20rem;
+  margin: var(--ag-space-2) 0;
+  padding: var(--ag-space-2) var(--ag-space-3);
+  border: var(--ag-stroke-hair) solid var(--ag-border);
+  border-radius: var(--ag-radius-1);
+  background: var(--ag-raised);
+  color: var(--ag-text);
   font-size: var(--ag-type-ui);
   line-height: var(--ag-leading-ui);
 }
@@ -191,6 +238,24 @@
 }
 .hero .artefact {
   margin-top: 0;
+}
+/* The same quiet ground as behind the intro, flattened to the note's wide
+   shape. */
+.content .hero-note {
+  position: relative;
+  margin-bottom: var(--ag-space-4);
+  color: var(--ag-text-muted);
+  font-size: var(--ag-type-ui);
+  line-height: var(--ag-leading-ui);
+}
+
+.hero-note::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--ag-space-6)) calc(-1 * var(--ag-space-8));
+  z-index: -1;
+  background: radial-gradient(closest-side, var(--ag-ground) 70%, transparent);
+  pointer-events: none;
 }
 
 /* --- the hero's folder --- */
@@ -389,10 +454,49 @@
 }
 .trip-bar-track { fill: var(--ag-sunken); }
 .trip-bar-fill { fill: var(--ag-border-strong); }
+/* The map and the graph run to the frame's edges, under its top corners, and
+   the graph drops its own border there, since the frame draws one. */
+.aleph-frame:has(> [data-aleph-view='https://aleph.garden/views/map']),
+.aleph-frame:has(> [data-aleph-view='https://aleph.garden/views/graph']) {
+  padding: 0;
+  overflow: hidden;
+}
+.aleph-frame > [data-aleph-view='https://aleph.garden/views/graph'] .graph svg {
+  border: 0;
+  border-radius: 0;
+}
+.trip-mapbox {
+  position: relative;
+}
 .trip-map {
   display: block;
   width: 100%;
   height: auto;
+}
+/* The tiles in grey, so the one colour on the map stays the route's. Dark
+   mode inverts them, which keeps streets light on a dark ground. */
+.trip-tiles {
+  filter: grayscale(1) opacity(0.55);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-ag-theme='light']):not(.theme-light) .trip-tiles {
+    filter: grayscale(1) invert(1) opacity(0.45);
+  }
+}
+[data-ag-theme='dark'] .trip-tiles,
+.theme-dark .trip-tiles {
+  filter: grayscale(1) invert(1) opacity(0.45);
+}
+.trip-osm {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding: 0 var(--ag-space-1);
+  background: var(--ag-raised);
+  color: var(--ag-text-muted);
+  font-size: var(--ag-type-2xs);
+  line-height: var(--ag-leading-xs);
+  text-decoration: none;
 }
 .trip-map polyline {
   fill: none;
@@ -460,6 +564,9 @@
   font-family: var(--ag-font-display);
   font-weight: 600;
   font-size: var(--ag-type-xs);
+}
+img.trip-initials {
+  object-fit: cover;
 }
 .trip-who {
   display: flex;
@@ -726,6 +833,14 @@
   stroke: var(--graph-node-stroke);
   stroke-width: 1.5;
 }
+/* A node this document only points at, described elsewhere if anywhere: the
+   unresolved shape of 4.6, with its label kept, since it is not loading. */
+.graph .node-outside rect {
+  fill: var(--ag-sunken);
+  stroke: var(--ag-border-strong);
+  stroke-width: 1;
+  stroke-dasharray: 4 3;
+}
 .graph .node text {
   fill: var(--ag-text);
   font-family: var(--ag-font-mono);
@@ -746,101 +861,17 @@
   fill: var(--graph-edge);
 }
 
-/* 4.1: the reader chooses what colour means, and the default is nothing. */
-.graph[data-colour='type'] .node[data-type='1'] rect,
-.graph[data-colour='space'] .node[data-space='1'] rect {
-  stroke: var(--cat-1);
-}
-.graph[data-colour='type'] .node[data-type='2'] rect,
-.graph[data-colour='space'] .node[data-space='2'] rect {
-  stroke: var(--cat-2);
-}
-.graph[data-colour='type'] .node[data-type='3'] rect,
-.graph[data-colour='space'] .node[data-space='3'] rect {
-  stroke: var(--cat-3);
-}
-.graph[data-colour='type'] .node[data-type='4'] rect,
-.graph[data-colour='space'] .node[data-space='4'] rect {
-  stroke: var(--cat-4);
-}
-.graph[data-colour='type'] .node[data-type='5'] rect,
-.graph[data-colour='space'] .node[data-space='5'] rect {
-  stroke: var(--cat-5);
-}
-.graph[data-colour='type'] .node[data-type='6'] rect,
-.graph[data-colour='space'] .node[data-space='6'] rect {
-  stroke: var(--cat-6);
-}
-.graph[data-colour='type'] .node rect,
-.graph[data-colour='space'] .node rect {
-  stroke-width: 2;
-}
-
-.graph-control {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: var(--ag-space-2);
+/* The predicate on its edge, with a halo in the canvas colour so a crossing
+   line does not run through the letters. */
+.graph .edge-label {
+  fill: var(--ag-text-muted);
   font-family: var(--ag-font-mono);
-  font-size: var(--ag-type-xs);
+  font-size: 11px;
+  paint-order: stroke;
+  stroke: var(--ag-sunken);
+  stroke-width: 4px;
+  stroke-linejoin: round;
 }
-.graph-control-label {
-  color: var(--ag-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-.graph-swap {
-  padding: 2px var(--ag-space-3);
-  border: var(--ag-stroke-hair) solid var(--ag-border);
-  border-radius: 999px;
-  background: none;
-  color: var(--ag-text-muted);
-  font: inherit;
-  cursor: pointer;
-}
-.graph-swap[aria-pressed='true'] {
-  border-color: var(--ag-accent);
-  background: var(--ag-accent-surface);
-  color: var(--ag-accent);
-}
-.graph-swap:focus-visible {
-  outline: 2px solid var(--ag-focus);
-  outline-offset: 2px;
-}
-
-/* One key at a time, for the channel the reader picked. */
-.graph-key {
-  display: none;
-  flex-wrap: wrap;
-  gap: var(--ag-space-2) var(--ag-space-4);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  font-family: var(--ag-font-mono);
-  font-size: var(--ag-type-xs);
-  color: var(--ag-text-muted);
-}
-.graph[data-colour='type'] .graph-key[data-channel='type'],
-.graph[data-colour='space'] .graph-key[data-channel='space'] {
-  display: flex;
-}
-.graph-key li {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ag-space-2);
-}
-.graph-key .swatch {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  border: 2px solid var(--graph-node-stroke);
-}
-.graph-key li[data-slot='1'] .swatch { border-color: var(--cat-1); }
-.graph-key li[data-slot='2'] .swatch { border-color: var(--cat-2); }
-.graph-key li[data-slot='3'] .swatch { border-color: var(--cat-3); }
-.graph-key li[data-slot='4'] .swatch { border-color: var(--cat-4); }
-.graph-key li[data-slot='5'] .swatch { border-color: var(--cat-5); }
-.graph-key li[data-slot='6'] .swatch { border-color: var(--cat-6); }
 
 .graph figcaption,
 .graph-empty {
@@ -850,38 +881,20 @@
   line-height: var(--ag-leading-sm);
 }
 
-/* A framed artefact that may outgrow its column: the drawing, and the
-   statement table a graph is drawn as. It scrolls inside its own box rather
-   than widening the page. The name avoids `frame`, which host/index.html
-   already uses for the shell's fixed corner slots. */
-.plate {
-  max-height: 30rem;
-  overflow: auto;
-  padding: var(--ag-space-4);
-  background: var(--ag-sunken);
-  border: var(--ag-stroke-hair) solid var(--ag-border);
-  border-radius: var(--ag-radius-2);
+/* The two people one above the other, each in its own frame. Side by side,
+   a frame is too narrow for its corners: host-core caps a corner at 55% of
+   the frame, and a host name or a list of types runs past that. */
+.people {
+  display: grid;
+  gap: var(--ag-space-4);
 }
-/* host-core breaks a statement table's cells at any character, which suits
-   the full reading column it was written for. In half a column that turns
-   every IRI into a one-word-per-line ribbon, so the identifier column keeps
-   its line and the plate scrolls sideways instead. */
-.plate .statements {
-  font-size: var(--ag-type-xs);
-  line-height: var(--ag-leading-xs);
+.people-source {
+  color: inherit;
+  text-decoration: none;
 }
-.plate .statements {
-  table-layout: fixed;
-  min-width: 40rem;
-}
-.plate .statements th,
-.plate .statements td {
-  word-break: normal;
-  overflow-wrap: anywhere;
-}
-.plate .statements td:first-child {
-  width: 21rem;
-  padding-right: var(--ag-space-4);
+.people-source:hover,
+.people-source:focus-visible {
+  text-decoration: underline;
 }
 
 .artefact figcaption {
@@ -895,52 +908,6 @@
   font-size: 1em;
   overflow-wrap: anywhere;
 }
-
-/* --- the drawing --- */
-
-/* Its natural size, so the text inside it lands on the type scale rather than
-   being scaled by the viewBox. 420 units is the drawing's own width and not a
-   token. */
-.diagram {
-  display: block;
-  width: 420px;
-  height: auto;
-}
-.diagram-box {
-  fill: var(--ag-ground);
-  stroke: var(--ag-border-strong);
-  stroke-width: var(--ag-stroke-hair);
-}
-/* The one emphasis in the drawing, on the stage the section is about. */
-.diagram-box-key {
-  stroke: var(--ag-accent);
-  stroke-width: var(--ag-stroke-node);
-}
-.diagram-stage {
-  fill: var(--ag-text);
-  font-family: var(--ag-font-text);
-  font-size: var(--ag-type-sm);
-  font-weight: 600;
-}
-.diagram-detail {
-  fill: var(--ag-text-muted);
-  font-family: var(--ag-font-mono);
-  font-size: var(--ag-type-xs);
-}
-.diagram-step {
-  fill: var(--ag-text-muted);
-  font-family: var(--ag-font-mono);
-  font-size: var(--ag-type-2xs);
-}
-.diagram-arrow {
-  fill: none;
-  stroke: var(--ag-border-strong);
-  stroke-width: var(--ag-stroke-node);
-}
-.diagram-head path {
-  fill: var(--ag-border-strong);
-}
-
 
 /* The word carries the label and the colour repeats it, so the badge still
    reads with no stylesheet and with no colour vision. */
@@ -977,42 +944,6 @@
   color: var(--ag-text-muted);
 }
 
-
-/* --- what is in the lab --- */
-
-.lab-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--ag-space-6);
-  max-width: 35rem;
-  margin: var(--ag-space-6) 0 0;
-  padding: 0;
-  list-style: none;
-}
-.entry-head {
-  display: flex;
-  align-items: baseline;
-  gap: var(--ag-space-4);
-}
-.entry-head a {
-  font-family: var(--ag-font-mono);
-  font-size: var(--ag-type-prose);
-}
-.leader {
-  flex: 1;
-  border-bottom: var(--ag-stroke-hair) dotted var(--ag-border);
-}
-.content .entry-what {
-  margin: var(--ag-space-2) 0 0;
-  font-size: var(--ag-type-code);
-  line-height: var(--ag-leading-code);
-}
-.content .entry-evidence {
-  margin: var(--ag-space-1) 0 0;
-  font-size: var(--ag-type-ui);
-  line-height: var(--ag-leading-ui);
-  color: var(--ag-text-muted);
-}
 
 /* --- narrow --- */
 

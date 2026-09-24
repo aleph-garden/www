@@ -1,13 +1,14 @@
 // The page at the host's own IRI, as a view. A rule matched the address, the
 // table named this view, and what it returns is the page: there is no template
 // and no document behind it. The copy says so because it is true, and the
-// vocabulary drawing on the page is drawn by the same pipeline rather than
-// pasted in: it is a transcluded child with a life of its own.
+// two people on the page are drawn by the same pipeline rather than pasted in:
+// each is a transcluded child with a life of its own.
 //
 // Everything else, including the styling in ./landing.css, is this page.
 
 import { escapeHtml, type View } from '@aleph-garden/vitrine'
 import projects from '../../public/projects.json'
+import { WEBID_FRAME } from './people.ts'
 import { FOLDER_FRAME, tripFolder } from './trip/index.ts'
 import { footer } from '@aleph-garden/starlight-theme/footer'
 import { installTheme } from '@aleph-garden/starlight-theme/theme'
@@ -27,56 +28,31 @@ export type Sources = { ambient: string }
  *  without documentation. */
 export type Project = { name: string; line: string; docs?: string; source: string }
 
-/** The Vitrine vocabulary, which the worker serves as `text/turtle` from this
- *  origin. Absolute rather than built from `origin`: the document lives at one
- *  IRI, and a local run has no worker to set the content type on it. */
-export const VOCABULARY = 'https://aleph.garden/ns/vitrine'
+/** Two WebID profiles on two servers this deployment does not run: a static
+ *  file and a Solid pod. Each is fetched when the page loads and drawn by
+ *  whichever view the rules pick for the person it describes. */
+export const PEOPLE = [
+  { document: 'https://toph.so/profile', fragment: 'me' },
+  { document: 'https://timbl.solidcommunity.net/profile/card', fragment: 'me' }
+] as const
 
 /** One of the six labels in planning/research/narrative-and-voice.md section
  *  5. Each carries a test a stranger can apply without asking, and the badge's
  *  colour carries no meaning the word does not. */
 type Label = 'Running' | 'Buildable' | 'Prototype' | 'Specified' | 'Note' | 'Parked'
 
-type Repository = {
-  name: string
-  href: string
-  what: string
-  label: Label
-  evidence: string
-}
-
-/** The public repositories only: a private one is a claim a reader cannot
- *  check. */
-const LAB: Repository[] = [
-  {
-    name: 'vitrine',
-    href: 'https://github.com/aleph-garden/vitrine',
-    what: 'Turns an address into HTML. It draws this page.',
+/** The label each project has earned, with the evidence behind it, keyed by
+ *  its source repository. A project without an entry shows no badge. */
+const STATUS: Record<string, { label: Label; evidence: string }> = {
+  'https://github.com/aleph-garden/vitrine': {
     label: 'Buildable',
     evidence: 'README commands and a docs site. Not yet run from a clean checkout.'
   },
-  {
-    name: 'quadpod',
-    href: 'https://github.com/aleph-garden/quadpod',
-    what: 'A Solid pod in Rust over Oxigraph. Every resource is a named graph in one quad store.',
+  'https://github.com/aleph-garden/quadpod': {
     label: 'Prototype',
     evidence: 'Well before a release: it verifies credentials and issues none.'
-  },
-  {
-    name: 'vocab',
-    href: 'https://github.com/aleph-garden/vocab',
-    what: 'The vocabularies the rest of the lab names, in Turtle.',
-    label: 'Specified',
-    evidence: 'Turtle and SHACL shapes. Nothing to build.'
-  },
-  {
-    name: 'wiki',
-    href: 'https://github.com/aleph-garden/wiki',
-    what: 'RDF knowledge graphs in a Solid pod, drawn as a graph.',
-    label: 'Parked',
-    evidence: 'Last commit 2026-05-29.'
   }
-]
+}
 
 const link = (href: string, text: string) =>
   `<a href="${escapeHtml(href)}" target="_top">${escapeHtml(text)}</a>`
@@ -84,22 +60,14 @@ const link = (href: string, text: string) =>
 function projectEntry(project: Project): string {
   const home = project.docs ?? project.source
   const ways = [project.docs && link(project.docs, 'Docs'), link(project.source, 'Source')].filter(Boolean)
+  const status = STATUS[project.source]
+  const badge = status
+    ? `<span class="badge badge-${status.label.toLowerCase()}" title="${escapeHtml(status.evidence)}">${escapeHtml(status.label)}</span>`
+    : ''
   return `<li class="project">
-            <a class="project-name" href="${escapeHtml(home)}" target="_top">${escapeHtml(project.name)} &rarr;</a>
+            <span class="project-head"><a class="project-name" href="${escapeHtml(home)}" target="_top">${escapeHtml(project.name)} &rarr;</a>${badge}</span>
             <span class="project-line">${escapeHtml(project.line)}</span>
             <span class="project-ways">${ways.join('')}</span>
-          </li>`
-}
-
-function labEntry(repo: Repository): string {
-  return `<li class="entry">
-            <div class="entry-head">
-              ${link(repo.href, repo.name)}
-              <span class="leader" aria-hidden="true"></span>
-              <span class="badge badge-${repo.label.toLowerCase()}">${escapeHtml(repo.label)}</span>
-            </div>
-            <p class="entry-what">${escapeHtml(repo.what)}</p>
-            <p class="entry-evidence">${escapeHtml(repo.evidence)}</p>
           </li>`
 }
 
@@ -122,8 +90,7 @@ const siteFooter = footer({
   }
 })
 
-function page(origin: string, sources: Sources, hero: string, vocabulary: string): string {
-  const here = escapeHtml(`${origin}/`)
+function page(sources: Sources, hero: string, people: string[]): string {
   return `<div class="landing">
     <div class="page">
       <div class="opening">
@@ -132,7 +99,7 @@ function page(origin: string, sources: Sources, hero: string, vocabulary: string
           <header class="intro">
             <h1 class="wordmark">${lockup('full', 'Aleph Garden')}</h1>
             <p class="statement">Aleph Garden is my lab for personal data. The mechanism it keeps coming back to: a resource has an address, a table of rules picks the code that draws it, and you replace that code without building an application around it.</p>
-            <p class="byline">I am ${link('https://github.com/tophcodes', 'Christopher Mühl')} and I work on it in the open, in pieces. Some experiments stay private; these are published.</p>
+            <p class="byline">by ${link('https://github.com/tophcodes', 'Christopher Mühl')}</p>
             <nav class="projects" aria-labelledby="projects-heading">
               <h2 id="projects-heading">Projects</h2>
               <ul>
@@ -143,13 +110,14 @@ function page(origin: string, sources: Sources, hero: string, vocabulary: string
 
           <div class="content">
             <section class="hero">
+              <p class="hero-note">A demo: the folder of a trip to Lisbon, five files of different kinds. Each one is drawn by the view a rule below picked for it. Click a rule and everything it matches redraws.</p>
               <figure class="artefact folder">${hero}</figure>
-              <p>This page is drawn the same way. A rule matched the address <code>${here}</code>, named a view, and that view returned the markup you are reading. Change the row and the page draws differently.</p>
             </section>
 
             <section>
               <h2>The case it started from</h2>
-              <p>A historical event is a time, a place and a set of people at once. Showing it well means a timeline, a map and a card per person, drawn from the data rather than from a page someone wrote by hand. The event is in a graph, the people are in a graph, and the vocabularies are standard and a decade old. Nothing renders that today.</p>
+              <p>A historical event is a time, a place and a set of people at once. Showing it well means a timeline, a map and a card per person, drawn from the data rather than from a page someone wrote by hand. The event is in a graph, the people are in a graph, and the vocabularies are standard and a decade old. Nothing<button type="button" class="footnote-ref" popovertarget="footnote-nothing" aria-label="Footnote 1">1</button> renders that today.</p>
+              <p class="footnote" id="footnote-nothing" popover>Nothing that I know of.</p>
             </section>
 
             <section>
@@ -169,24 +137,18 @@ function page(origin: string, sources: Sources, hero: string, vocabulary: string
               <p>The addresses are IRIs, and where the data has structure it is RDF. That lets a rule say &ldquo;anything of this type&rdquo; and have the type mean the same thing in my store and in yours, and it lets a view someone else published apply to my data with no schema negotiated between us.</p>
               <p>Which store holds it stays open: a Solid pod, a directory of files, or a CRDT-backed graph. The renderer knows no server, no protocol and no RDF library of its own. A host fetches, the renderer draws.</p>
               <figure class="artefact">
-                <div class="plate">${vocabulary}</div>
-                <figcaption><code>${escapeHtml(VOCABULARY)}</code>, fetched from this origin as Turtle, parsed into quads, and drawn by the view the rules picked for it. Colour is off until you ask for it, because a graph has one colour channel and the reader decides what it means.</figcaption>
+                <div class="people">
+                  ${people.join('')}
+                </div>
+                <figcaption>Two WebID profiles, fetched from their own servers when this page loads: a static file on <code>toph.so</code> and a Solid pod on <code>solidcommunity.net</code>. They describe their person with different properties, and both declare the type <code>foaf:Person</code>. One rule sends that type to <code>person-card</code>, which draws both.</figcaption>
               </figure>
             </section>
 
             <section>
               <h2>Where this is heading</h2>
               <p>Personal data is what the lab is about. I built the renderer first, because every other piece needs one to show anything.</p>
-              <p>Transclusion is <strong>built</strong>: the vocabulary drawing above is a child the runtime mounted, with its own region (${link('/vitrine/docs/reference/transclusion/', 'the reference')}). Writing is <strong>specified and unbuilt</strong>: one more call on the context, the change shaped as an ActivityStreams activity, the host doing the transport (${link('https://github.com/aleph-garden/vitrine/blob/main/docs/drafts/write.md', 'write.md')}).</p>
+              <p>Transclusion is <strong>built</strong>: each card above is a child the runtime mounted, with its own region (${link('/vitrine/docs/reference/transclusion/', 'the reference')}). Writing is <strong>specified and unbuilt</strong>: one more call on the context, the change shaped as an ActivityStreams activity, the host doing the transport (${link('https://github.com/aleph-garden/vitrine/blob/main/docs/drafts/write.md', 'write.md')}).</p>
               <p>Syncing is <strong>designed and unbuilt</strong>: convergence in the client with Automerge, the synced bytes landing in a Solid container. I found no Automerge adapter over a Solid pod anywhere, so I treat it as an experiment. Today Vitrine reads and never writes.</p>
-            </section>
-
-            <section>
-              <h2>What is in the lab</h2>
-              <p class="caveat">The public repositories, each with the label it has earned. Dates were measured on 2026-09-22 from each repository's own history. Every label is provisional: the test behind Buildable has not been run this quarter.</p>
-              <ul class="lab-list">
-          ${LAB.map(labEntry).join('\n          ')}
-              </ul>
             </section>
           </div>
         </div>
@@ -209,12 +171,12 @@ export function landingView(origin: string, sources: Sources): View {
       // What `transclude` answers goes into the string verbatim: a placeholder
       // the runtime mounts a child into, or the child itself on a host that
       // renders ahead of time.
-      const [hero, vocabulary] = await Promise.all([
+      const [hero, ...people] = await Promise.all([
         ctx.transclude(tripFolder(origin), { view: FOLDER_FRAME }),
-        ctx.transclude(VOCABULARY)
+        ...PEOPLE.map(({ document, fragment }) => ctx.transclude(document, { fragment, view: WEBID_FRAME }))
       ])
       return {
-        html: page(origin, sources, hero, vocabulary),
+        html: page(sources, hero, people),
         hydrate: (root) => {
           const stop = installTheme(root)
           return { dispose: stop }

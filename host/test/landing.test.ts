@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test } from 'bun:test'
 import { type Context, createRenderer, fallbackView, type Resource } from '@aleph-garden/vitrine'
 import projects from '../../public/projects.json'
-import { LANDING_VIEW, landingView, VOCABULARY } from '../src/landing.ts'
+import { LANDING_VIEW, landingView, PEOPLE } from '../src/landing.ts'
 
 const SOURCES = { ambient: '<svg class="ambient" aria-hidden="true"></svg>' }
 const landing = landingView('https://pod.example', SOURCES)
@@ -48,20 +48,20 @@ describe('landingView', () => {
     // The heading is the lockup, whose alternative text is the page's name.
     expect(rendered.html).toContain('<h1 class="wordmark">')
     expect(rendered.html).toContain('alt="Aleph Garden"')
-    for (const heading of ['The case it started from', 'Why there are so few renderers', 'The mechanism', 'The substrate', 'Where this is heading', 'What is in the lab']) {
+    for (const heading of ['The case it started from', 'Why there are so few renderers', 'The mechanism', 'The substrate', 'Where this is heading']) {
       expect(rendered.html).toContain(`<h2>${heading}</h2>`)
     }
   })
 
-  test('shows the address it was matched on, which is the claim it makes', async () => {
+  test('says above the folder that it is a demo', async () => {
     const rendered = await landing.render(resource('https://pod.example/'), noop)
-    expect(rendered.html).toContain('<code>https://pod.example/</code>')
+    expect(rendered.html).toContain('<p class="hero-note">A demo:')
   })
 
-  test('draws the hero as the trip folder in its frame, beside the vocabulary', async () => {
+  test('draws the hero as the trip folder in its frame, and the two WebIDs', async () => {
     const { ctx, asked } = recording()
     const rendered = await landing.render(resource('https://pod.example/'), ctx)
-    expect(asked).toEqual(['https://pod.example/fixtures/trip/', VOCABULARY])
+    expect(asked).toEqual(['https://pod.example/fixtures/trip/', ...PEOPLE.map((p) => p.document)])
     expect(rendered.html).toContain(
       '<div data-aleph-transclude="https://pod.example/fixtures/trip/"></div>'
     )
@@ -76,15 +76,11 @@ describe('landingView', () => {
     }
   })
 
-  test('lists only public repositories, each linked', async () => {
+  test('labels the projects that have earned one, with the evidence as its title', async () => {
     const rendered = await landing.render(resource('https://pod.example/'), noop)
-    expect(rendered.html.match(/<li class="entry">/g)).toHaveLength(4)
-    for (const name of ['vitrine', 'quadpod', 'vocab', 'wiki']) {
-      expect(rendered.html).toContain(`href="https://github.com/aleph-garden/${name}" target="_top">${name}</a>`)
-    }
-    for (const name of ['memex', 'marginalia', 'garden', 'www', 'aleph']) {
-      expect(rendered.html).not.toContain(`>${name}</a>`)
-    }
+    expect(rendered.html).toContain('<span class="badge badge-buildable" title="README commands')
+    expect(rendered.html).toContain('<span class="badge badge-prototype" title="Well before a release')
+    expect(rendered.html).not.toContain('What is in the lab')
   })
 
   test('keeps projects out of the footer', async () => {
@@ -207,5 +203,18 @@ describe('the field behind the opening', () => {
     const opening = rendered.html.indexOf('<div class="opening">')
     expect(rendered.html.indexOf(SOURCES.ambient)).toBeGreaterThan(opening)
     expect(rendered.html.indexOf(SOURCES.ambient)).toBeLessThan(rendered.html.indexOf('<header class="intro">'))
+  })
+})
+
+describe('the theme boot script', () => {
+  test('reads the key and values the theme module writes', async () => {
+    const boot = await Bun.file(new URL('../../public/theme-boot.js', import.meta.url)).text()
+    const theme = await Bun.file(new URL('../../packages/starlight-theme/theme.js', import.meta.url)).text()
+    expect(theme).toContain("const KEY = 'starlight-theme'")
+    expect(boot).toContain("localStorage.getItem('starlight-theme')")
+    for (const attr of ['root.dataset.theme', "'data-ag-theme'"]) {
+      expect(theme).toContain(attr)
+      expect(boot).toContain(attr)
+    }
   })
 })

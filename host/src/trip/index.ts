@@ -5,7 +5,8 @@
 // graph too, and its type is the more specific thing to say about it.
 
 import { schema } from '@aleph-garden/terms'
-import { subjectsGridView, subjectsListView, type View } from '@aleph-garden/vitrine'
+import { subjectsGridView, type View } from '@aleph-garden/vitrine'
+import { graphView } from '../graph.ts'
 import { fileFrame, folderFrame, listingView, personFrame } from './listing.ts'
 import { defineRows, IN_FOLDER, inFolder } from './rules.ts'
 import {
@@ -62,7 +63,7 @@ export function tripViews(origin: string): View[] {
       kind: 'graph',
       label: 'graph',
       when: inFolder({ graph: true }),
-      views: [subjectsGridView, subjectsListView]
+      views: [subjectsGridView, graphView]
     }
   ])
   return [listingView(tripFolder(origin)), folderFrame, fileFrame, personFrame, ...rows]

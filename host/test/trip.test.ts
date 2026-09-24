@@ -3,7 +3,7 @@ import { type Context, createRenderer, type Resource, type View } from '@aleph-g
 import { turtleParser } from '@aleph-garden/vitrine-turtle'
 import { FILE_FRAME, FOLDER_FRAME, LISTING_VIEW, PERSON_FRAME, tripFolder, tripViews } from '../src/trip/index.ts'
 import { flip, isFlipped, onFlip, rowFor } from '../src/trip/rules.ts'
-import { budgetOf, lineOf, project, tasksOf } from '../src/trip/views.ts'
+import { budgetOf, cardView, lineOf, project, tasksOf } from '../src/trip/views.ts'
 
 const ORIGIN = 'https://pod.example'
 const FOLDER = tripFolder(ORIGIN)
@@ -80,12 +80,14 @@ describe('the files in the folder', () => {
     expect(lineOf(ROUTE.body as string)).toHaveLength(2)
   })
 
-  test('projects a line into the box without leaving it', () => {
-    const points = project([
+  test('projects a line into the box without leaving it, over the tiles that cover the box', () => {
+    const { points, tiles } = project([
       [-9.14, 38.71],
       [-9.13, 38.72],
       [-9.12, 38.7]
     ])
+    expect(tiles.length).toBeGreaterThan(0)
+    expect(tiles.every((t) => t.left <= 0 || t.left < 280)).toBe(true)
     for (const [x, y] of points) {
       expect(x).toBeGreaterThanOrEqual(0)
       expect(x).toBeLessThanOrEqual(280)
@@ -246,5 +248,48 @@ describe('folding the folder', () => {
     expect(drawn.html).toContain(
       '<p class="trip-summary">3 files: packing.txt, budget.csv, people.ttl</p>'
     )
+  })
+})
+
+describe('the person card', () => {
+  const card = createRenderer({ parsers: [turtleParser()], views: [cardView] })
+
+  test('reads a WebID profile written in FOAF and vCard', async () => {
+    const profile = await card.parse({
+      iri: 'https://pod.example/profile/card',
+      contentType: 'text/turtle',
+      body: '@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n@prefix vcard: <http://www.w3.org/2006/vcard/ns#> .\n<#me> a foaf:Person ; foaf:name "Ada Lovelace" ; vcard:role "Analyst" ; vcard:organization-name "Engine" ; vcard:hasPhoto <ada.png> .\n',
+      quads: [],
+      allow: ['read']
+    })
+    const drawn = await cardView.render({ ...profile, subject: `${profile.iri}#me` }, context())
+    expect(drawn.html).toContain('<span class="trip-name">Ada Lovelace</span>')
+    expect(drawn.html).toContain('Analyst, Engine')
+    expect(drawn.html).toContain('<img class="trip-initials" src="https://pod.example/profile/ada.png"')
+  })
+
+  test('draws initials for a photo that is not https', async () => {
+    const profile = await card.parse({
+      iri: 'http://pod.example/card',
+      contentType: 'text/turtle',
+      body: '@prefix foaf: <http://xmlns.com/foaf/0.1/> .\n<#me> foaf:name "Ada Lovelace" ; foaf:img <ada.png> .\n',
+      quads: [],
+      allow: ['read']
+    })
+    const drawn = await cardView.render({ ...profile, subject: `${profile.iri}#me` }, context())
+    expect(drawn.html).not.toContain('<img')
+    expect(drawn.html).toContain('>AL</span>')
+  })
+})
+
+describe('the folder fixture', () => {
+  test('states the size each member really has', async () => {
+    const dir = new URL('../../public/fixtures/trip/', import.meta.url)
+    const listing = await Bun.file(new URL('index.ttl', dir)).text()
+    const stated = [...listing.matchAll(/<([^>]+)> dcterms:modified [^;]+; stat:size (\d+) \./g)]
+    expect(stated).toHaveLength(5)
+    for (const [, name, size] of stated) {
+      expect(Bun.file(new URL(name!, dir)).size).toBe(Number(size))
+    }
   })
 })

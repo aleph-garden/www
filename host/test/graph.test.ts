@@ -33,9 +33,10 @@ describe('graphView', () => {
     for (const name of ['one', 'two', 'scheme']) {
       expect(html).toContain(`>${name}</text>`)
     }
-    // Three subjects here, plus the two type targets, which are subjects of
-    // nothing and so are not drawn.
+    // Three subjects here, and the two type targets, which are subjects of
+    // nothing and so are drawn as pointed at from here.
     expect(html.match(/<g class="node"/g)).toHaveLength(3)
+    expect(html.match(/<g class="node node-outside"/g)).toHaveLength(2)
   })
 
   test('dashes an rdf:type edge and arrows the rest', async () => {
@@ -43,47 +44,14 @@ describe('graphView', () => {
     // broader points at another subject in the document, so it is a link.
     expect(html).toContain('class="edge edge-link"')
     expect(html).toContain('marker-end="url(#graph-arrow)"')
-    // Both type targets sit outside the document, so no type edge is drawn.
-    expect(html).not.toContain('edge-type')
+    // The type targets are nodes too, so each type statement is a dashed edge.
+    expect(html.match(/class="edge edge-type"/g)).toHaveLength(3)
   })
 
-  test('starts with colour off, and offers the two channels', async () => {
+  test('labels each edge with its predicate', async () => {
     const { html } = await graphView.render(scheme, {} as never)
-    expect(html).toContain('data-colour="none"')
-    expect(html).toContain('<button class="graph-swap" type="button" data-colour="type"')
-    expect(html).toContain('data-colour="space"')
-    expect(html).toContain('aria-pressed="true"')
-  })
-
-  test('assigns a categorical slot per distinct value, not per node', async () => {
-    const { html } = await graphView.render(scheme, {} as never)
-    // Two Concepts share a slot; the scheme gets the next one.
-    expect(html.match(/data-type="1"/g)).toHaveLength(2)
-    expect(html.match(/data-type="2"/g)).toHaveLength(1)
-    // One namespace across all three subjects.
-    expect(html.match(/data-space="1"/g)).toHaveLength(3)
-  })
-
-  test('the control switches the channel and says so on the buttons', async () => {
-    const rendered = await graphView.render(scheme, {} as never)
-    const root = document.createElement('div')
-    root.innerHTML = rendered.html
-    document.body.append(root)
-    const handle = rendered.hydrate?.(root, {} as never)
-    const figure = root.querySelector('.graph') as HTMLElement
-
-    root.querySelector<HTMLButtonElement>('.graph-swap[data-colour="space"]')?.click()
-    expect(figure.dataset.colour).toBe('space')
-    expect(
-      root.querySelector('.graph-swap[data-colour="space"]')?.getAttribute('aria-pressed')
-    ).toBe('true')
-    expect(
-      root.querySelector('.graph-swap[data-colour="none"]')?.getAttribute('aria-pressed')
-    ).toBe('false')
-
-    handle?.dispose?.()
-    root.querySelector<HTMLButtonElement>('.graph-swap[data-colour="type"]')?.click()
-    expect(figure.dataset.colour).toBe('space')
+    expect(html).toContain('>broader</text>')
+    expect(html.match(/class="edge-label"[^>]*>type</g)).toHaveLength(3)
   })
 
   test('says so when a document carries no statements', async () => {

@@ -5,13 +5,15 @@
 
 import type { Host } from '@aleph-garden/host-core'
 import { anonymousSession } from '@aleph-garden/host-core'
-import { containerView, fallbackView } from '@aleph-garden/vitrine'
+import { containerView, fallbackView, fileRowView, folderView } from '@aleph-garden/vitrine'
 import { jsonLdParser } from '@aleph-garden/vitrine-jsonld'
 import { parseTurtle, turtleParser } from '@aleph-garden/vitrine-turtle'
 import { gardenAddress } from './address.ts'
 import { graphView } from './graph.ts'
 import { landingView, type Sources } from './landing.ts'
+import { webIdFrame } from './people.ts'
 import { tripViews } from './trip/index.ts'
+import { cardView, foaf } from './trip/views.ts'
 
 /** `sources` holds what the build prepared for the landing page: the field
  *  behind the opening. It arrives from the entry rather than being imported
@@ -24,7 +26,14 @@ export const gardenHost = (sources: Sources): Host => ({
   views: () => [
     landingView(location.origin, sources),
     ...tripViews(location.origin),
+    // The landing page's two WebIDs. The hero's people are schema:Person and
+    // reach the card through the folder's own table; this rule applies
+    // anywhere.
+    { ...cardView, when: [{ type: foaf.Person }] },
+    webIdFrame,
     graphView,
+    folderView,
+    fileRowView,
     containerView,
     fallbackView
   ]

@@ -9,10 +9,9 @@
 // graph among the files, people.ttl, is taken apart by vitrine's subjects
 // view, and each person in it gets a frame of its own, picked by its type.
 
-import { ldp, rdf, schema } from '@aleph-garden/terms'
-import { about, escapeHtml, type Rendered, type Resource, typesOf, type View } from '@aleph-garden/vitrine'
+import { ldp, schema } from '@aleph-garden/terms'
+import { about, escapeHtml, folderView, type Rendered, type Resource, typesOf, type View } from '@aleph-garden/vitrine'
 import {
-  contentType,
   type Field,
   type FieldOf,
   frameView,
@@ -20,7 +19,6 @@ import {
   viewName,
   viewSwitch
 } from '@aleph-garden/vitrine/frame'
-import { contentOf } from '../graph.ts'
 import { flip, IN_FOLDER, isFlipped, type Kind, onFlip, picked, rowFor, rowsOf } from './rules.ts'
 
 export const FOLDER_FRAME = 'https://aleph.garden/views/folder-frame'
@@ -34,17 +32,33 @@ const onSubject = (resource: Resource) =>
   resource.subject !== undefined && resource.subject !== resource.iri
 
 /** The name field with a dot in front of it, coloured by the kind of file,
- *  or in the border's ink for the folder itself. */
+ *  or in the border's ink for the folder itself. It is also the one hook the
+ *  frame needs on the table: when the row for this frame switches, the frame
+ *  draws again, so the rules pick for it anew. Frames of other rows keep what
+ *  they show. The counter is only there to change. */
 const dotted: FieldOf = async (resource, view, ctx, show) => {
-  const kind = rowFor(resource)?.kind ?? 'folder'
+  const redraw = ctx.state('table', 0)
+  const kind = rowFor(resource)?.kind
+  const dot = `<span class="trip-dot" data-kind="${kind ?? 'folder'}" aria-hidden="true"></span>`
+  let html: string
   if (onSubject(resource)) {
     const subject = resource.subject ?? resource.iri
     const hash = new URL(subject).hash
-    return `<span class="trip-dot" data-kind="${kind}" aria-hidden="true"></span><span class="aleph-frame-name" title="${escapeHtml(subject)}">${escapeHtml(hash)}</span>`
+    html = `${dot}<span class="aleph-frame-name" title="${escapeHtml(subject)}">${escapeHtml(hash)}</span>`
+  } else {
+    const label = await name(resource, view, ctx, show)
+    html = `${dot}${typeof label === 'string' ? label : (label?.html ?? '')}`
   }
-  const label = await name(resource, view, ctx, show)
-  const html = typeof label === 'string' ? label : (label?.html ?? '')
-  return `<span class="trip-dot" data-kind="${kind}" aria-hidden="true"></span>${html}`
+  const field: Field = {
+    html,
+    hydrate: () => {
+      const stop = onFlip((flipped) => {
+        if (flipped === kind) redraw.set(redraw.get() + 1)
+      })
+      return { dispose: () => void stop() }
+    }
+  }
+  return field
 }
 
 /** The folder's full address, since the folder is the page's example. */
@@ -62,37 +76,10 @@ const switcher: FieldOf = (resource, view, ctx, show) => {
   ])(resource, view, ctx, show)
 }
 
-/** What the rules picked by: the content type for a file, the rdf:type for a
- *  subject inside one. It is also the one hook the frame needs on the table:
- *  when the row for this frame switches, the frame draws again, so the rules
- *  pick for it anew. Frames of other rows keep what they show. The counter is
- *  only there to change. */
-const typeAndRedraw: FieldOf = async (resource, view, ctx, show) => {
-  const redraw = ctx.state('table', 0)
-  const mine = rowFor(resource)?.kind
-  const html = onSubject(resource)
-    ? typesOf(resource).map((type) => escapeHtml(prefixed(type))).join(', ')
-    : String(await contentType(resource, view, ctx, show))
-  const field: Field = {
-    html,
-    hydrate: () => {
-      const stop = onFlip((kind) => {
-        if (kind === mine) redraw.set(redraw.get() + 1)
-      })
-      return { dispose: () => void stop() }
-    }
-  }
-  return field
-}
-
-/** How many people a graph describes, on the file's frame only. */
-const count: FieldOf = (resource) => {
-  if (onSubject(resource) || rowFor(resource)?.kind !== 'graph') return undefined
-  const people = contentOf(resource).filter(
-    (q) => q.predicate.value === rdf.type && q.object.value === schema.Person
-  ).length
-  return people ? `${people} × schema:Person` : undefined
-}
+/** The rdf:type a subject inside a file was picked by. A file's frame leaves
+ *  the corner empty: the rule table under the files names the content types. */
+const pickedBy: FieldOf = (resource) =>
+  onSubject(resource) ? typesOf(resource).map((type) => escapeHtml(prefixed(type))).join(', ') : undefined
 
 const SCHEMA = 'https://schema.org/'
 const prefixed = (iri: string) => (iri.startsWith(SCHEMA) ? `schema:${iri.slice(SCHEMA.length)}` : iri)
@@ -100,8 +87,7 @@ const prefixed = (iri: string) => (iri.startsWith(SCHEMA) ? `schema:${iri.slice(
 const corners = {
   'top-start': dotted,
   'top-end': switcher,
-  'bottom-start': typeAndRedraw,
-  'bottom-end': count
+  'bottom-start': pickedBy
 }
 
 export const fileFrame = frameView(FILE_FRAME, corners)
@@ -123,8 +109,10 @@ const BODY_ID = 'trip-body'
  *  re-render takes the focus back. */
 let refocus = false
 
-/** The folder's own corner: the name of the view inside, then a button that
- *  folds the folder to one line. Whether it is folded is the folder frame's
+/** The folder's own corner: a switch between the listing and vitrine's
+ *  folder view, the same container drawn as a row per file, then a button
+ *  that folds the listing to one line. The folder view has nothing to fold,
+ *  so the button stays hidden there. Whether it is folded is the folder frame's
  *  state, so a row switch, which draws the frame again, keeps it. Folding
  *  hides the files rather than dropping them, so what a reader ticked or
  *  switched in them is still there when the folder opens. Without
@@ -132,13 +120,17 @@ let refocus = false
 const folderCorner: FieldOf = async (resource, view, ctx, show) => {
   const folded = ctx.state('folded', false)
   const open = !folded.get()
-  const label = String(await viewName(resource, view, ctx, show))
+  const picker = (await viewSwitch([
+    [LISTING_VIEW, 'trip-listing'],
+    [folderView.id, 'folder']
+  ])(resource, view, ctx, show)) as Field
   return {
-    html: `<span>${label}</span><button type="button" class="trip-fold" aria-controls="${BODY_ID}" aria-expanded="${open}" aria-label="${open ? 'Collapse folder' : 'Expand folder'}" hidden><span aria-hidden="true">${open ? '▴' : '▾'}</span></button>`,
-    hydrate(corner) {
+    html: `${picker.html}<button type="button" class="trip-fold" aria-controls="${BODY_ID}" aria-expanded="${open}" aria-label="${open ? 'Collapse folder' : 'Expand folder'}" hidden><span aria-hidden="true">${open ? '−' : '+'}</span></button>`,
+    hydrate(corner, hydrating) {
+      const switching = picker.hydrate?.(corner, hydrating)
       const button = corner.querySelector<HTMLButtonElement>('.trip-fold')
       const body = corner.closest('.aleph-frame')?.querySelector(`#${BODY_ID}`)
-      if (!button || !body) return
+      if (!button || !body) return switching
       button.hidden = false
       body.toggleAttribute('data-folded', !open)
       if (refocus) {
@@ -150,7 +142,12 @@ const folderCorner: FieldOf = async (resource, view, ctx, show) => {
         folded.set(open)
       }
       button.addEventListener('click', click)
-      return { dispose: () => button.removeEventListener('click', click) }
+      return {
+        dispose: () => {
+          button.removeEventListener('click', click)
+          switching?.dispose?.()
+        }
+      }
     }
   }
 }
